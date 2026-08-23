@@ -531,7 +531,7 @@ button{font:inherit}
     <div class="sqi-od-actions">
       <button class="sqi-od-btn gold" onclick="openAdminLogin()">PAINEL ADM</button>
       <button class="sqi-od-btn" onclick="openRegister()">CADASTRAR EQUIPE</button>
-      <button class="sqi-od-btn" onclick="document.getElementById('ranking')?.scrollIntoView({behavior:'smooth'})">RANKING COMPLETO</button>
+      <button class="sqi-od-btn" onclick="document.getElementById('ranking-sqi-public')?.scrollIntoView({behavior:'smooth'})">RANKING COMPLETO</button>
       <button class="sqi-od-btn" onclick="document.getElementById('academy')?.scrollIntoView({behavior:'smooth'})">SQI ACADEMY</button>
     </div>
   </div>
@@ -928,28 +928,7 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 <script>
 const DEFAULT_SCORE_RULES={kill:1,damagePer1000:0,viewsPer1000:0,placements:[15,12,10,8,7,5,4,3,2,1,0,0,0,0,0,0]};
 function getScoreRules(){
-  const defaults={...DEFAULT_SCORE_RULES,placements:[...DEFAULT_SCORE_RULES.placements]};
-  try{
-    const saved=JSON.parse(localStorage.getItem('sqi_score_rules')||'null');
-    if(!saved||typeof saved!=='object') return defaults;
-    const placements=Array.isArray(saved.placements)?saved.placements.map(v=>Number(v)||0):[];
-    // Migra configurações antigas que tinham todas as posições zeradas.
-    const hasAnyPlacementPoints=placements.some(v=>v>0);
-    const mergedPlacements=defaults.placements.map((v,i)=>(
-      hasAnyPlacementPoints && placements[i]!==undefined ? placements[i] : v
-    ));
-    const rules={
-      kill:Number.isFinite(Number(saved.kill))?Number(saved.kill):defaults.kill,
-      damagePer1000:Number.isFinite(Number(saved.damagePer1000))?Number(saved.damagePer1000):defaults.damagePer1000,
-      viewsPer1000:Number.isFinite(Number(saved.viewsPer1000))?Number(saved.viewsPer1000):defaults.viewsPer1000,
-      placements:mergedPlacements
-    };
-    // Corrige imediatamente o armazenamento local para que a regra certa permaneça.
-    localStorage.setItem('sqi_score_rules',JSON.stringify(rules));
-    return rules;
-  }catch(e){
-    return defaults;
-  }
+  try{return {...DEFAULT_SCORE_RULES,...JSON.parse(localStorage.getItem('sqi_score_rules')||'{}')}}catch(e){return {...DEFAULT_SCORE_RULES}}
 }
 function saveScoreRules(){
   const placements=[...document.querySelectorAll('.score-place input')].map(x=>Number(x.value)||0);
@@ -989,7 +968,7 @@ function calcScoreItem(item,r){
 }
 function updateScorePreview(){
   const r=getScoreRules(),rows=document.querySelectorAll('#scoreRows .score-row');let grand=0;
-  rows.forEach(row=>{const item={pos:Math.max(1,Number(row.querySelector('.score-pos')?.value)||1),kills:Math.max(0,Number(row.querySelector('.score-kills')?.value)||0),damage:Math.max(0,Number(row.querySelector('.score-damage-value')?.value)||0),views:Math.max(0,Number(row.querySelector('.score-views-value')?.value)||0)};const c=calcScoreItem(item,r);grand+=c.total;const out=row.querySelector('.score-row-total');if(out)out.textContent=c.total.toFixed(2);const place=row.querySelector('.score-row-placement');if(place)place.textContent=c.placement.toFixed(2)});
+  rows.forEach(row=>{const item={pos:Math.max(1,Number(row.querySelector('.score-pos')?.value)||1),kills:Math.max(0,Number(row.querySelector('.score-kills')?.value)||0),damage:Math.max(0,Number(row.querySelector('.score-damage-value')?.value)||0),views:Math.max(0,Number(row.querySelector('.score-views-value')?.value)||0)};const c=calcScoreItem(item,r);grand+=c.total;const out=row.querySelector('.score-row-total');if(out)out.textContent=c.total.toFixed(2)});
   const total=document.getElementById('calcScore');if(total)total.textContent=grand.toFixed(2);
   const extra=document.getElementById('calcExtra');if(extra){let e=0;rows.forEach(row=>{const item={pos:1,kills:0,damage:Number(row.querySelector('.score-damage-value')?.value)||0,views:Number(row.querySelector('.score-views-value')?.value)||0};e+=calcScoreItem(item,r).damagePts+calcScoreItem(item,r).viewPts});extra.textContent=e.toFixed(2)}
 }
@@ -1064,7 +1043,7 @@ function launchScoreResult(){
   const ids=items.map(x=>String(x.teamId));if(new Set(ids).size!==ids.length){msg.textContent='Uma equipe não pode aparecer duas vezes na mesma partida.';return}
   const teams=getTeams();const list=getResults();
   for(const item of items){const team=teams.find(t=>String(t.id)===String(item.teamId));if(!team){msg.textContent='Equipe inválida.';return}if(list.some(x=>String(x.match)===String(match)&&String(x.teamId)===String(team.id))){msg.textContent='Já existe resultado dessa equipe nesta partida.';return}}
-  items.forEach(item=>{const team=teams.find(t=>String(t.id)===String(item.teamId)),c=calcScoreItem(item,r);list.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),match,teamId:team.id,team:team.name,logo:team.logo||'',pos:item.pos,placementPoints:c.placement,kills:item.kills,damage:item.damage,views:item.views,placement:c.placement,killPts:c.killPts,damagePts:c.damagePts,viewPts:c.viewPts,total:c.total,createdAt:new Date().toISOString()})});
+  items.forEach(item=>{const team=teams.find(t=>String(t.id)===String(item.teamId)),c=calcScoreItem(item,r);list.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),match,teamId:team.id,team:team.name,logo:team.logo||'',pos:item.pos,kills:item.kills,damage:item.damage,views:item.views,placement:c.placement,killPts:c.killPts,damagePts:c.damagePts,viewPts:c.viewPts,total:c.total,createdAt:new Date().toISOString()})});
   localStorage.setItem('sqi_match_results',JSON.stringify(list));
   msg.textContent='✓ '+items.length+' equipes lançadas. Pontuação salva no banco central.';
   renderAdminAll();
@@ -1227,162 +1206,123 @@ async function removeRecruit(id){
 </script>
 
 <script>
+/* SQI RANKING — MOTOR OFICIAL INDEPENDENTE DO RANKING DE CAMPEONATOS */
 const SQI_DEFAULT_TEAMS=[];
-const SQI_DEFAULT_RULES={kill:1,damagePer1000:0,viewsPer1000:0,placements:[15,12,10,8,7,5,4,3,2,1,0,0,0,0,0,0]};
-function migrateSqiTeams(){
- try{
-  const key='sqi_internal_teams';
-  const saved=JSON.parse(localStorage.getItem(key)||'null');
-  const fake=['Ghosts','Delta','Dogs','Ômega','Bruxos','Themparis','Nemesis','Zeus','Olympus','Phoenix','Legacy','Nexus'];
-  if(Array.isArray(saved) && saved.some(t=>fake.includes(t.name))) localStorage.setItem(key,JSON.stringify(saved.filter(t=>!fake.includes(t.name))));
- }catch(e){}
-}
-migrateSqiTeams();
-function getSqiTeams(){
- try{
-  const saved=JSON.parse(localStorage.getItem('sqi_internal_teams'));
-  return Array.isArray(saved)?saved:SQI_DEFAULT_TEAMS;
- }catch(e){return SQI_DEFAULT_TEAMS}
-}
+const SQI_DEFAULT_RULES={kill:1,damagePer1000:0,assists:1,contracts:0.5,placements:[15,12,10,8,7,5,4,3,2,1,0,0,0,0,0,0]};
+function getSqiTeams(){try{const v=JSON.parse(localStorage.getItem('sqi_internal_teams')||'null');return Array.isArray(v)?v:SQI_DEFAULT_TEAMS}catch(e){return SQI_DEFAULT_TEAMS}}
 function saveSqiTeams(v){localStorage.setItem('sqi_internal_teams',JSON.stringify(v))}
-function getSqiRules(){
- try{return {...SQI_DEFAULT_RULES,...JSON.parse(localStorage.getItem('sqi_internal_rules')||'{}')}}
- catch(e){return SQI_DEFAULT_RULES}
-}
+function getSqiRules(){try{return Object.assign({},SQI_DEFAULT_RULES,JSON.parse(localStorage.getItem('sqi_internal_rules')||'{}'))}catch(e){return Object.assign({},SQI_DEFAULT_RULES)}}
 function saveSqiRules(v){localStorage.setItem('sqi_internal_rules',JSON.stringify(v))}
 function getSqiResults(){
- try{return JSON.parse(localStorage.getItem('sqi_internal_results')||'[]')}
- catch(e){return []}
+ try{
+  const v=JSON.parse(localStorage.getItem('sqi_internal_results')||'[]');
+  if(!Array.isArray(v))return [];
+  /* ISOLAMENTO: o Ranking SQI só pode aceitar resultados pertencentes aos times do motor SQI. */
+  const ids=new Set(getSqiTeams().map(t=>String(t.id)));
+  return v.filter(r=>String(r.source||'sqi_internal')==='sqi_internal' && ids.has(String(r.teamId)));
+ }catch(e){return []}
 }
 function saveSqiResults(v){localStorage.setItem('sqi_internal_results',JSON.stringify(v))}
+function sqiSuccess(message){
+ const old=document.getElementById('sqiSuccessDashboard');if(old)old.remove();
+ const d=document.createElement('div');d.id='sqiSuccessDashboard';d.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72)';
+ d.innerHTML='<div style="max-width:420px;width:100%;background:#fff;border:2px solid #c89a22;border-radius:18px;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)"><div style="font-size:42px;color:#c89a22">✓</div><h2 style="margin:8px 0;color:#111">'+esc(message)+'</h2><p style="color:#555;margin:0">O resultado foi confirmado no sistema e o Ranking SQI foi atualizado.</p><button class="small-btn gold" style="margin-top:18px" onclick="document.getElementById(&quot;sqiSuccessDashboard&quot;).remove()">CONTINUAR</button></div>';
+ document.body.appendChild(d);setTimeout(()=>d.remove(),4500);
+}
+async function sqiCloudSave(key,value){
+ localStorage.setItem(key,JSON.stringify(value));
+ if(window.sqiCloudSet){const ok=await window.sqiCloudSet(key,JSON.stringify(value));if(!ok)throw new Error('O banco não confirmou '+key)}
+}
+async function cleanPollutedSqiRanking(){
+ try{
+  if(!window.sqiCloudGet||!window.sqiCloudSet)return;
+  const [internal,match]=await Promise.all([window.sqiCloudGet('sqi_internal_results'),window.sqiCloudGet('sqi_match_results')]);
+  if(!Array.isArray(internal)||!Array.isArray(match))return;
+  const matchIds=new Set(match.map(x=>String(x.id)));
+  /* CORREÇÃO PONTUAL: não inverter nem misturar lançamentos.
+     Remove do Ranking SQI somente registros que também pertencem ao motor
+     oficial de campeonato/scrim, inclusive quando os IDs antigos forem diferentes. */
+  const matchKeys=new Set(match.map(x=>[String(x.teamId||''),String(x.match||'').trim().toLowerCase(),Number(x.total||0).toFixed(6)].join('|')));
+  const clean=internal.filter(x=>{
+   if(matchIds.has(String(x.id))) return false;
+   const key=[String(x.teamId||''),String(x.match||'').trim().toLowerCase(),Number(x.total||0).toFixed(6)].join('|');
+   return !matchKeys.has(key);
+  });
+  if(clean.length!==internal.length){await window.sqiCloudSet('sqi_internal_results',JSON.stringify(clean));localStorage.setItem('sqi_internal_results',JSON.stringify(clean));if(typeof renderSqiRanking==='function')renderSqiRanking();if(typeof renderPublicSqiRanking==='function')renderPublicSqiRanking();}
+ }catch(e){console.warn('SQI ranking cleanup:',e)}
+}
 function resetSqiRanking(){
  if(!confirm('Zerar TODA a pontuação interna da SQI? As equipes serão mantidas.'))return;
- saveSqiResults([]);
- renderSqiRanking();
+ saveSqiResults([]);if(window.sqiCloudSet)window.sqiCloudSet('sqi_internal_results','[]');renderSqiRanking();renderPublicSqiRanking();
 }
-function addSqiTeam(){
- const name=document.getElementById('sqiNewTeamName').value.trim();
- const tag=document.getElementById('sqiNewTeamTag').value.trim();
- if(!name){document.getElementById('sqiTeamMsg').textContent='Digite o nome do time.';return}
+async function addSqiTeam(){
+ const name=document.getElementById('sqiNewTeamName').value.trim(),tag=document.getElementById('sqiNewTeamTag').value.trim(),msg=document.getElementById('sqiTeamMsg');
+ if(!name){msg.textContent='Digite o nome do time.';return}
  const teams=getSqiTeams();
- if(teams.some(t=>t.name.toLowerCase()===name.toLowerCase())){document.getElementById('sqiTeamMsg').textContent='Esse time já está no ranking.';return}
- teams.push({id:'sqi-'+Date.now(),name,tag:tag||name.toUpperCase().slice(0,8)});
- saveSqiTeams(teams);
- document.getElementById('sqiNewTeamName').value='';
- document.getElementById('sqiNewTeamTag').value='';
- document.getElementById('sqiTeamMsg').textContent='✓ Time adicionado ao Ranking SQI.';
- renderSqiRanking();
+ if(teams.some(t=>String(t.name).toLowerCase()===name.toLowerCase())){msg.textContent='Esse time já está no Ranking SQI.';return}
+ teams.push({id:'sqi-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name,tag:tag||name.toUpperCase().slice(0,8)});
+ try{await sqiCloudSave('sqi_internal_teams',teams);document.getElementById('sqiNewTeamName').value='';document.getElementById('sqiNewTeamTag').value='';msg.textContent='✓ Time adicionado ao Ranking SQI.';renderSqiRanking();renderPublicSqiRanking()}catch(e){msg.textContent='⚠ '+e.message}
 }
-function removeSqiTeam(id){
- const teams=getSqiTeams();
- const t=teams.find(x=>x.id===id);if(!t)return;
- if(!confirm('Remover '+t.name+' do Ranking SQI? Os resultados desse time também serão removidos.'))return;
- saveSqiTeams(teams.filter(x=>x.id!==id));
- saveSqiResults(getSqiResults().filter(x=>x.teamId!==id));
- renderSqiRanking();
-}
-function editSqiTeam(id){
+async function removeSqiTeam(id){
  const teams=getSqiTeams(),t=teams.find(x=>x.id===id);if(!t)return;
- const name=prompt('Novo nome do time:',t.name);
- if(name===null)return;
- const clean=name.trim();if(!clean)return;
- const tag=prompt('Nova TAG:',t.tag);
- if(tag===null)return;
- t.name=clean;t.tag=tag.trim()||clean.toUpperCase().slice(0,8);
- saveSqiTeams(teams);
- renderSqiRanking();
+ if(!confirm('Remover '+t.name+' do Ranking SQI? Os resultados desse time também serão removidos.'))return;
+ try{await sqiCloudSave('sqi_internal_teams',teams.filter(x=>x.id!==id));await sqiCloudSave('sqi_internal_results',getSqiResults().filter(x=>x.teamId!==id));renderSqiRanking();renderPublicSqiRanking()}catch(e){alert('Não foi possível confirmar a alteração: '+e.message)}
 }
-function saveSqiRulesFromPanel(){
+async function editSqiTeam(id){
+ const teams=getSqiTeams(),t=teams.find(x=>x.id===id);if(!t)return;
+ const name=prompt('Novo nome do time:',t.name);if(name===null)return;const clean=name.trim();if(!clean)return;
+ const tag=prompt('Nova TAG:',t.tag);if(tag===null)return;t.name=clean;t.tag=tag.trim()||clean.toUpperCase().slice(0,8);
+ try{await sqiCloudSave('sqi_internal_teams',teams);renderSqiRanking();renderPublicSqiRanking()}catch(e){alert('Não foi possível confirmar a alteração: '+e.message)}
+}
+async function saveSqiRulesFromPanel(){
  const placements=[...document.querySelectorAll('.sqi-place-input')].map(x=>Number(x.value)||0);
- saveSqiRules({
-  kill:Number(document.getElementById('sqiRuleKill').value)||0,
-  damagePer1000:Number(document.getElementById('sqiRuleDamage').value)||0,
-  viewsPer1000:Number(document.getElementById('sqiRuleViews').value)||0,
-  placements
- });
- renderSqiRanking();
+ const rules={kill:Number(document.getElementById('sqiRuleKill').value)||0,damagePer1000:Number(document.getElementById('sqiRuleDamage').value)||0,assists:Number(document.getElementById('sqiRuleAssist').value)||0,contracts:Number(document.getElementById('sqiRuleContract').value)||0,placements};
+ try{await sqiCloudSave('sqi_internal_rules',rules);renderSqiRanking()}catch(e){alert('Não foi possível salvar as regras: '+e.message)}
 }
-function calcSqiPreview(){
- const r=getSqiRules();
- const pos=Math.max(1,Number(document.getElementById('sqiResPos')?.value)||1);
- const kills=Math.max(0,Number(document.getElementById('sqiResKills')?.value)||0);
- const damage=Math.max(0,Number(document.getElementById('sqiResDamage')?.value)||0);
- const views=Math.max(0,Number(document.getElementById('sqiResViews')?.value)||0);
- const p=Number(r.placements[pos-1]||0), k=kills*Number(r.kill||0), d=damage/1000*Number(r.damagePer1000||0), v=views/1000*Number(r.viewsPer1000||0);
- const set=(id,n)=>{const e=document.getElementById(id);if(e)e.textContent=n.toFixed(2)};
- set('sqiCalcP',p);set('sqiCalcK',k);set('sqiCalcD',d);set('sqiCalcV',v);set('sqiCalcTotal',p+k+d+v);
+function calcSqiData(){
+ const r=getSqiRules(),pos=Math.max(1,Number(document.getElementById('sqiResPos')?.value)||1),kills=Math.max(0,Number(document.getElementById('sqiResKills')?.value)||0),damage=Math.max(0,Number(document.getElementById('sqiResDamage')?.value)||0),assists=Math.max(0,Number(document.getElementById('sqiResAssists')?.value)||0),contracts=Math.max(0,Number(document.getElementById('sqiResContracts')?.value)||0);
+ const p=Number(r.placements[pos-1]||0),k=kills*Number(r.kill||0),d=damage/1000*Number(r.damagePer1000||0),a=assists*Number(r.assists||0),c=contracts*Number(r.contracts||0);
+ return {pos,kills,damage,assists,contracts,placementPts:p,killPts:k,damagePts:d,assistPts:a,contractPts:c,total:p+k+d+a+c};
 }
-function launchSqiResult(){
- const teamId=document.getElementById('sqiResTeam').value;
- const team=getSqiTeams().find(t=>t.id===teamId);
- const msg=document.getElementById('sqiResultMsg');
- if(!team){msg.textContent='Selecione um time da SQI.';return}
- const r=getSqiRules(),pos=Math.max(1,Number(document.getElementById('sqiResPos').value)||1),kills=Math.max(0,Number(document.getElementById('sqiResKills').value)||0),damage=Math.max(0,Number(document.getElementById('sqiResDamage').value)||0),views=Math.max(0,Number(document.getElementById('sqiResViews').value)||0);
- const p=Number(r.placements[pos-1]||0),k=kills*Number(r.kill||0),d=damage/1000*Number(r.damagePer1000||0),v=views/1000*Number(r.viewsPer1000||0),total=p+k+d+v;
+function calcSqiPreview(){const x=calcSqiData();const set=(id,n)=>{const e=document.getElementById(id);if(e)e.textContent=Number(n).toFixed(2)};set('sqiCalcP',x.placementPts);set('sqiCalcK',x.killPts);set('sqiCalcD',x.damagePts);set('sqiCalcA',x.assistPts);set('sqiCalcC',x.contractPts);set('sqiCalcTotal',x.total);}
+function calculateSqiPoints(){calcSqiPreview();const msg=document.getElementById('sqiResultMsg');if(msg)msg.textContent='✓ Pontuação calculada: '+calcSqiData().total.toFixed(2)+' pontos. Agora clique em LANÇAR PONTOS.'}
+async function launchSqiResult(){
+ const teamId=document.getElementById('sqiResTeam').value,team=getSqiTeams().find(t=>String(t.id)===String(teamId)),msg=document.getElementById('sqiResultMsg');
+ if(!team){msg.textContent='Selecione um time criado no Gerenciar Times da SQI.';return}
+ const match=(document.getElementById('sqiResMatch').value||'').trim();if(!match){msg.textContent='Informe a partida / evento.';return}
+ const x=calcSqiData();if(x.pos<1){msg.textContent='Informe uma colocação válida.';return}
  const results=getSqiResults();
- results.push({id:Date.now(),teamId:team.id,team:team.name,match:document.getElementById('sqiResMatch').value.trim()||'Partida',pos,placementPoints:p,kills,damage,views,total});
- saveSqiResults(results);
- msg.textContent='✓ '+team.name+' recebeu '+total.toFixed(2)+' pontos no Ranking SQI.';
- renderSqiRanking();
+ const duplicate=results.some(r=>String(r.teamId)===String(team.id)&&String(r.match).trim().toLowerCase()===match.toLowerCase());
+ if(duplicate){msg.textContent='Esse time já possui lançamento nessa partida.';return}
+ const row={id:'sqi-r-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),source:'sqi_internal',teamId:team.id,team:team.name,tag:team.tag,match,pos:x.pos,kills:x.kills,damage:x.damage,assists:x.assists,contracts:x.contracts,placement:x.placementPts,killPts:x.killPts,damagePts:x.damagePts,assistPts:x.assistPts,contractPts:x.contractPts,total:x.total,createdAt:new Date().toISOString()};
+ try{await sqiCloudSave('sqi_internal_results',results.concat(row));msg.textContent='✓ Pontuação cadastrada com sucesso.';renderSqiRanking();renderPublicSqiRanking();sqiSuccess('PONTUAÇÃO CADASTRADA COM SUCESSO');document.getElementById('sqiResMatch').value='';['sqiResPos','sqiResKills','sqiResDamage','sqiResAssists','sqiResContracts'].forEach((id,i)=>{const e=document.getElementById(id);if(e)e.value=i===0?1:0});calcSqiPreview()}catch(e){msg.textContent='⚠ Não foi lançado: '+e.message}
 }
 function renderSqiRanking(){
- const root=document.getElementById('adminSqiRanking');if(!root)return;
- const teams=getSqiTeams(),results=getSqiResults(),rules=getSqiRules();
- const totals=teams.map(t=>({...t,total:results.filter(r=>r.teamId===t.id).reduce((a,r)=>a+Number(r.total||0),0),games:results.filter(r=>r.teamId===t.id).length})).sort((a,b)=>b.total-a.total);
+ const root=document.getElementById('adminSqiRanking');if(!root)return;const teams=getSqiTeams(),results=getSqiResults(),rules=getSqiRules();
+ const totals=teams.map(t=>{const rs=results.filter(r=>String(r.teamId)===String(t.id));return {...t,total:rs.reduce((a,r)=>a+Number(r.total||0),0),games:rs.length}}).sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name));
  root.innerHTML=`
- <div class="sqi-rank-hero"><div style="font-size:8px;letter-spacing:2px;color:#c89a22;font-weight:950">SÉRIES QUALIFIED</div><h3>RANKING INTERNO SQI</h3><div class="goldline"></div><p>Ranking exclusivo dos times da SQI. <b>Separado do ranking dos campeonatos.</b> Começa zerado e só muda quando o ADM lançar pontos aqui.</p></div>
- <div class="sqi-rank-grid">
-  <div>
-   <div class="admin-card"><h3>🏆 CLASSIFICAÇÃO SQI</h3>
-    ${totals.length?`<div style="overflow:auto"><table class="sqi-rank-table"><thead><tr><th>#</th><th>TIME</th><th>PARTIDAS</th><th>PONTOS</th><th>AÇÃO</th></tr></thead><tbody>${totals.map((t,i)=>`<tr><td class="sqi-rank-pos">${i+1}</td><td><div class="sqi-team-name">${esc(t.name)}</div><div class="sqi-team-sub">${esc(t.tag)}</div></td><td>${t.games}</td><td class="sqi-rank-total">${t.total.toFixed(2)}</td><td><button class="small-btn" onclick="editSqiTeam('${t.id}')">EDITAR</button> <button class="small-btn red" onclick="removeSqiTeam('${t.id}')">REMOVER</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="sqi-empty">Nenhum time cadastrado.</div>'}
-   </div>
-   <div class="admin-card"><h3>➕ GERENCIAR TIMES DA SQI</h3><div class="sqi-team-add"><input class="sqi-rank-input" id="sqiNewTeamName" placeholder="Nome do time"><input class="sqi-rank-input" id="sqiNewTeamTag" placeholder="TAG"></div><div style="margin-top:9px"><button class="small-btn gold" onclick="addSqiTeam()">ADICIONAR TIME</button> <span id="sqiTeamMsg" class="score-note"></span></div></div>
-  </div>
-  <div>
-   <div class="admin-card"><h3>⚙️ PONTUAÇÃO EXCLUSIVA SQI</h3><p class="score-note">Essas regras são independentes da tabela de campeonato.</p>
-    <div class="sqi-rule-grid">
-     <div><label style="font-size:7px;font-weight:950">KILL</label><input id="sqiRuleKill" class="sqi-rank-input" type="number" step=".01" value="${rules.kill}"></div>
-     <div><label style="font-size:7px;font-weight:950">1.000 DANO</label><input id="sqiRuleDamage" class="sqi-rank-input" type="number" step=".01" value="${rules.damagePer1000}"></div>
-     <div><label style="font-size:7px;font-weight:950">1.000 VIEWS</label><input id="sqiRuleViews" class="sqi-rank-input" type="number" step=".01" value="${rules.viewsPer1000}"></div>
-    </div>
-    <div style="margin-top:12px"><b style="font-size:9px">COLOCAÇÃO</b><div class="sqi-rule-grid" style="margin-top:7px">${rules.placements.map((v,i)=>`<div><label style="font-size:7px;font-weight:950">${i+1}º</label><input class="sqi-rank-input sqi-place-input" type="number" step=".01" value="${v}"></div>`).join('')}</div></div>
-    <div style="margin-top:10px"><button class="small-btn gold" onclick="saveSqiRulesFromPanel()">SALVAR REGRAS SQI</button><button class="small-btn red" style="margin-left:5px" onclick="resetSqiRanking()">ZERAR PONTUAÇÃO</button></div>
-   </div>
-   <div class="admin-card"><h3>➕ LANÇAR PONTUAÇÃO DE UM TIME SQI</h3>
-    <select id="sqiResTeam" class="sqi-rank-input"><option value="">Selecione o time</option>${teams.map(t=>`<option value="${t.id}">${esc(t.name)} · ${esc(t.tag)}</option>`).join('')}</select>
-    <div class="sqi-rule-grid" style="margin-top:8px">
-      <input id="sqiResMatch" class="sqi-rank-input" placeholder="Partida / evento">
-      <input id="sqiResPos" class="sqi-rank-input" type="number" min="1" value="1" placeholder="Colocação">
-      <input id="sqiResKills" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Kills">
-      <input id="sqiResDamage" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Dano">
-      <input id="sqiResViews" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Views">
-    </div>
-    <div class="calc-grid" style="grid-template-columns:repeat(5,1fr);margin-top:10px">
-      <div class="calc-box"><small>COLOCAÇÃO</small><strong id="sqiCalcP">0.00</strong></div>
-      <div class="calc-box"><small>KILLS</small><strong id="sqiCalcK">0.00</strong></div>
-      <div class="calc-box"><small>DANO</small><strong id="sqiCalcD">0.00</strong></div>
-      <div class="calc-box"><small>VIEWS</small><strong id="sqiCalcV">0.00</strong></div>
-      <div class="calc-box calc-total"><small>TOTAL</small><strong id="sqiCalcTotal" style="color:#c89a22">0.00</strong></div>
-    </div>
-    <div style="margin-top:10px"><button class="small-btn gold" onclick="launchSqiResult()">LANÇAR PONTOS NO RANKING SQI</button> <span id="sqiResultMsg" class="score-note"></span></div>
-   </div>
-   <div class="admin-card"><h3>📋 HISTÓRICO DO RANKING SQI</h3>${results.length?results.slice().reverse().map(r=>`<div class="sqi-history-row"><b>${esc(r.match)}</b><span>${esc(r.team)} · ${r.pos}º lugar · ${Number(r.placementPoints||0).toFixed(2)} colocação · ${r.kills} K · ${r.damage} D · ${r.views} V</span><b>${Number(r.total).toFixed(2)} pts</b><button class="small-btn" onclick="deleteSqiResult(${r.id})">EXCLUIR</button></div>`).join(''):'<div class="sqi-empty">Nenhum ponto lançado. Ranking zerado.</div>'}</div>
-  </div>
- </div>`;
- ['sqiResPos','sqiResKills','sqiResDamage','sqiResViews'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',calcSqiPreview)});
- calcSqiPreview();
+ <div class="sqi-rank-hero"><div style="font-size:8px;letter-spacing:2px;color:#c89a22;font-weight:950">SÉRIES QUALIFIED</div><h3>RANKING INTERNO SQI</h3><div class="goldline"></div><p>Ranking exclusivo dos times da SQI. <b>Independente do ranking de campeonatos e scrims.</b> Só recebe pontos quando o ADM lançar neste motor.</p></div>
+ <div class="sqi-rank-grid"><div>
+ <div class="admin-card"><h3>🏆 CLASSIFICAÇÃO SQI</h3>${totals.length?`<div style="overflow:auto"><table class="sqi-rank-table"><thead><tr><th>#</th><th>TIME</th><th>PARTIDAS</th><th>PONTOS</th><th>AÇÃO</th></tr></thead><tbody>${totals.map((t,i)=>`<tr><td class="sqi-rank-pos">${i+1}</td><td><div class="sqi-team-name">${esc(t.name)}</div><div class="sqi-team-sub">${esc(t.tag)}</div></td><td>${t.games}</td><td class="sqi-rank-total">${t.total.toFixed(2)}</td><td><button class="small-btn" onclick="editSqiTeam('${t.id}')">EDITAR</button> <button class="small-btn red" onclick="removeSqiTeam('${t.id}')">REMOVER</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="sqi-empty">Nenhum time cadastrado.</div>'}</div>
+ <div class="admin-card"><h3>➕ GERENCIAR TIMES DA SQI</h3><div class="sqi-team-add"><input class="sqi-rank-input" id="sqiNewTeamName" placeholder="Nome do time"><input class="sqi-rank-input" id="sqiNewTeamTag" placeholder="TAG"></div><div style="margin-top:9px"><button class="small-btn gold" onclick="addSqiTeam()">ADICIONAR TIME</button> <span id="sqiTeamMsg" class="score-note"></span></div></div>
+ </div><div>
+ <div class="admin-card"><h3>⚙️ REGRAS DO RANKING SQI</h3><p class="score-note">Este motor é separado da pontuação de campeonato.</p><div class="sqi-rule-grid"><div><label style="font-size:7px;font-weight:950">PONTOS POR KILL</label><input id="sqiRuleKill" class="sqi-rank-input" type="number" step=".01" value="${rules.kill}"></div><div><label style="font-size:7px;font-weight:950">PONTOS POR 1.000 DANO</label><input id="sqiRuleDamage" class="sqi-rank-input" type="number" step=".01" value="${rules.damagePer1000}"></div><div><label style="font-size:7px;font-weight:950">PONTOS POR ASSISTÊNCIA</label><input id="sqiRuleAssist" class="sqi-rank-input" type="number" step=".01" value="${rules.assists}"></div><div><label style="font-size:7px;font-weight:950">PONTOS POR CONTRATO</label><input id="sqiRuleContract" class="sqi-rank-input" type="number" step=".01" value="${rules.contracts}"></div></div><div style="margin-top:12px"><b style="font-size:9px">COLOCAÇÃO</b><div class="sqi-rule-grid" style="margin-top:7px">${rules.placements.map((v,i)=>`<div><label style="font-size:7px;font-weight:950">${i+1}º</label><input class="sqi-rank-input sqi-place-input" type="number" step=".01" value="${v}"></div>`).join('')}</div></div><div style="margin-top:10px"><button class="small-btn gold" onclick="saveSqiRulesFromPanel()">SALVAR REGRAS SQI</button><button class="small-btn red" style="margin-left:5px" onclick="resetSqiRanking()">ZERAR PONTUAÇÃO</button></div></div>
+ <div class="admin-card"><h3>📊 MOTOR OFICIAL DO RANKING SQI</h3><p class="score-note">Escolha um dos times criados acima. Preencha os dados, calcule e somente depois lance.</p><select id="sqiResTeam" class="sqi-rank-input"><option value="">Selecione o time</option>${teams.map(t=>`<option value="${t.id}">${esc(t.name)} · ${esc(t.tag)}</option>`).join('')}</select><div class="sqi-rule-grid" style="margin-top:8px"><input id="sqiResMatch" class="sqi-rank-input" placeholder="Partida / evento"><input id="sqiResPos" class="sqi-rank-input" type="number" min="1" value="1" placeholder="Colocação"><input id="sqiResKills" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Kills"><input id="sqiResDamage" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Dano"><input id="sqiResAssists" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Assistências"><input id="sqiResContracts" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Contratos"></div><div class="calc-grid" style="grid-template-columns:repeat(6,1fr);margin-top:10px"><div class="calc-box"><small>POS</small><strong id="sqiCalcP">0.00</strong></div><div class="calc-box"><small>KILLS</small><strong id="sqiCalcK">0.00</strong></div><div class="calc-box"><small>DANO</small><strong id="sqiCalcD">0.00</strong></div><div class="calc-box"><small>ASSIST.</small><strong id="sqiCalcA">0.00</strong></div><div class="calc-box"><small>CONTR.</small><strong id="sqiCalcC">0.00</strong></div><div class="calc-box calc-total"><small>TOTAL</small><strong id="sqiCalcTotal" style="color:#c89a22">0.00</strong></div></div><div style="margin-top:10px"><button class="small-btn gold" onclick="calculateSqiPoints()">CALCULAR PONTOS</button> <button class="small-btn" onclick="launchSqiResult()">LANÇAR PONTOS</button> <span id="sqiResultMsg" class="score-note"></span></div></div>
+ <div class="admin-card"><h3>📋 HISTÓRICO DO RANKING SQI</h3>${results.length?results.slice().reverse().map(r=>`<div class="sqi-history-row"><b>${esc(r.match)}</b><span>${esc(r.team)} · ${r.kills} K · ${r.damage} D · ${r.assists||0} A · ${r.contracts||0} C</span><b>${Number(r.total).toFixed(2)} pts</b><button class="small-btn" onclick="deleteSqiResult('${r.id}')">EXCLUIR</button></div>`).join(''):'<div class="sqi-empty">Nenhum ponto lançado. Ranking zerado.</div>'}</div>
+ </div></div>`;
+ ['sqiResPos','sqiResKills','sqiResDamage','sqiResAssists','sqiResContracts'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',calcSqiPreview)});calcSqiPreview();
 }
-function deleteSqiResult(id){saveSqiResults(getSqiResults().filter(x=>x.id!==id));renderSqiRanking()}
+async function deleteSqiResult(id){try{await sqiCloudSave('sqi_internal_results',getSqiResults().filter(x=>String(x.id)!==String(id)));renderSqiRanking();renderPublicSqiRanking()}catch(e){alert('Não foi possível excluir: '+e.message)}}
 </script>
 
 <script>
-function renderPublicSqiRanking(){
+async function renderPublicSqiRanking(){
  const body=document.getElementById('publicSqiRankingBody');if(!body)return;
  const teams=getSqiTeams(),res=getSqiResults();
- const totals=teams.map(t=>({t,total:res.filter(r=>r.teamId===t.id).reduce((a,r)=>a+Number(r.total||0),0),games:res.filter(r=>r.teamId===t.id).length})).sort((a,b)=>b.total-a.total);
+ const totals=teams.map(t=>{const rs=res.filter(r=>String(r.teamId)===String(t.id));return {t,total:rs.reduce((a,r)=>a+Number(r.total||0),0),games:rs.length}}).sort((a,b)=>b.total-a.total||a.t.name.localeCompare(b.t.name));
  body.innerHTML=totals.map((x,i)=>`<tr><td class="sqi-rank-pos">${i+1}</td><td><div class="sqi-team-name">${esc(x.t.name)}</div><div class="sqi-team-sub">${esc(x.t.tag)}</div></td><td>${x.games}</td><td class="sqi-rank-total">${x.total.toFixed(2)}</td></tr>`).join('')||'<tr><td colspan="4" class="sqi-empty">Ranking SQI zerado.</td></tr>';
 }
-document.addEventListener('DOMContentLoaded',renderPublicSqiRanking);
+document.addEventListener('DOMContentLoaded',()=>{renderPublicSqiRanking();setTimeout(cleanPollutedSqiRanking,1200)});
 </script>
 
 <script>
@@ -2107,53 +2047,20 @@ function renderAcademyProgress(){let done=0;SQI_LESSONS.forEach((_,i)=>{if(local
     }catch(e){if(msg)msg.textContent='⚠ Não foi possível confirmar as regras no banco.';console.error('SQI rules:',e);}
   };
   async function syncPublishedRankingsFromMatchResults(results){
+    /* CAMPEONATO/SCRIM: atualiza somente o ranking geral. Nunca toca no Ranking SQI. */
     const rows=Array.isArray(results)?results:[];
     const byTeam=new Map();
     for(const r of rows){
-      const id=String(r.teamId||r.team||'');
-      if(!id) continue;
+      const id=String(r.teamId||r.team||''); if(!id) continue;
       const cur=byTeam.get(id)||{id:r.teamId||id,name:r.team||'Equipe',tag:r.tag||'',points:0};
-      cur.name=r.team||cur.name;
-      cur.tag=r.tag||cur.tag;
-      cur.points=Number(cur.points||0)+Number(r.total||0);
-      byTeam.set(id,cur);
+      cur.name=r.team||cur.name; cur.tag=r.tag||cur.tag; cur.points+=Number(r.total||0); byTeam.set(id,cur);
     }
     const general=[...byTeam.values()].map(x=>({id:x.id,name:x.name,tag:x.tag||x.name.toUpperCase().slice(0,8),points:Number(x.points||0)}));
-    const gOk=await window.sqiCloudSet('sqi_general_ranking',JSON.stringify(general));
-    if(!gOk) throw new Error('Ranking geral não foi confirmado no Supabase');
-
-    /* O mesmo resultado alimenta o painel/ranking SQI público. Times são criados
-       automaticamente pelo nome caso ainda não existam no ranking interno. */
-    let internalTeams=await window.sqiCloudGet('sqi_internal_teams');
-    let internalResults=await window.sqiCloudGet('sqi_internal_results');
-    internalTeams=Array.isArray(internalTeams)?internalTeams:[];
-    internalResults=Array.isArray(internalResults)?internalResults:[];
-    const teamMap=new Map(internalTeams.map(t=>[String(t.name||'').trim().toLowerCase(),t]));
-    for(const r of rows){
-      const key=String(r.team||'').trim().toLowerCase();
-      if(!key) continue;
-      if(!teamMap.has(key)){
-        const t={id:'sqi-auto-'+String(r.teamId||Date.now()+Math.random()),name:r.team||'Equipe',tag:r.tag||String(r.team||'').toUpperCase().slice(0,8)};
-        internalTeams.push(t); teamMap.set(key,t);
-      }
-    }
-    const existingIds=new Set(internalResults.map(r=>String(r.id)));
-    for(const r of rows){
-      const t=teamMap.get(String(r.team||'').trim().toLowerCase());
-      if(!t) continue;
-      const rid=String(r.id);
-      if(existingIds.has(rid)) continue;
-      internalResults.push({id:rid,teamId:t.id,team:t.name,match:r.match||'Partida',pos:Number(r.pos||1),kills:Number(r.kills||0),damage:Number(r.damage||0),views:Number(r.views||0),total:Number(r.total||0),createdAt:r.createdAt||new Date().toISOString()});
-    }
-    if(!await window.sqiCloudSet('sqi_internal_teams',JSON.stringify(internalTeams))) throw new Error('Times do Ranking SQI não foram confirmados no Supabase');
-    if(!await window.sqiCloudSet('sqi_internal_results',JSON.stringify(internalResults))) throw new Error('Ranking SQI não foi confirmado no Supabase');
-    const gVerify=await window.sqiCloudGet('sqi_general_ranking');
-    const iVerify=await window.sqiCloudGet('sqi_internal_results');
-    if(!Array.isArray(gVerify) || !Array.isArray(iVerify)) throw new Error('Supabase não confirmou os dois rankings');
-    localStorage.setItem('sqi_general_ranking',JSON.stringify(gVerify));
-    localStorage.setItem('sqi_internal_teams',JSON.stringify(internalTeams));
-    localStorage.setItem('sqi_internal_results',JSON.stringify(iVerify));
-    return {general:gVerify,internal:iVerify};
+    if(!await window.sqiCloudSet('sqi_general_ranking',JSON.stringify(general))) throw new Error('Ranking geral não foi confirmado no Supabase');
+    const verify=await window.sqiCloudGet('sqi_general_ranking');
+    if(!Array.isArray(verify)) throw new Error('Supabase não confirmou o ranking geral');
+    localStorage.setItem('sqi_general_ranking',JSON.stringify(verify));
+    return {general:verify};
   }
 
   window.launchScoreResult=async function(){
@@ -2210,178 +2117,5 @@ function renderAcademyProgress(){let done=0;SQI_LESSONS.forEach((_,i)=>{if(local
   window.addEventListener('visibilitychange',function(){try{if(document.visibilityState==='hidden'&&typeof sqiSaveScoreDraft==='function')sqiSaveScoreDraft()}catch(e){}});
 })();
 </script>
-
-<!-- SQI PERSONALIZADA — SISTEMA COMPLETO -->
-<style>
-#sqiPersonalizadaModal{display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.9);overflow:auto;padding:16px}
-#sqiPersonalizadaModal.open{display:block}
-.sqiPzShell{max-width:1180px;margin:20px auto;background:#09090b;color:#f4f4f4;border:1px solid #c9a84e;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:18px}
-.sqiPzHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #2d2d31;padding-bottom:12px}
-.sqiPzHeader small{display:block;color:#999;margin-top:4px}
-.sqiPzNav{display:flex;gap:7px;overflow:auto;padding:12px 0}
-.sqiPzNav button,.sqiPzBtn{border:0;border-radius:7px;padding:9px 12px;font-weight:800;cursor:pointer;background:#c9a84e;color:#111}
-.sqiPzNav button{background:#222225;color:#eee;white-space:nowrap}
-.sqiPzNav button.active{background:#c9a84e;color:#111}
-.sqiPzGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.sqiPzCard{background:#151518;border:1px solid #2c2c31;border-radius:10px;padding:14px;margin-bottom:10px}
-.sqiPzCard h3{margin:0 0 9px;font-size:14px}
-.sqiPzNumber{font-size:29px;font-weight:900}
-.sqiPzForm{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sqiPzForm input,.sqiPzForm select,.sqiPzForm textarea{width:100%;box-sizing:border-box;padding:10px;background:#101012;color:#fff;border:1px solid #444;border-radius:7px}
-.sqiPzForm textarea{grid-column:1/-1;min-height:80px}
-.sqiPzTable{width:100%;border-collapse:collapse;font-size:12px}
-.sqiPzTable th,.sqiPzTable td{padding:9px;border-bottom:1px solid #29292d;text-align:left;vertical-align:middle}
-.sqiPzPill{display:inline-block;border-radius:99px;background:#28282d;padding:4px 8px;font-size:10px}
-.sqiPzActions{display:flex;gap:6px;flex-wrap:wrap}
-.sqiPzEmpty{color:#999;padding:8px 0}
-@media(max-width:720px){.sqiPzGrid{grid-template-columns:1fr 1fr}.sqiPzForm{grid-template-columns:1fr}.sqiPzTable{font-size:10px}.sqiPzShell{margin:0;padding:12px}}
-</style>
-
-<div id="sqiPersonalizadaModal">
- <div class="sqiPzShell">
-  <div class="sqiPzHeader">
-   <div><strong style="font-size:19px">SQI · PERSONALIZADA</strong><small>Gestão de partidas, inscrições, salas, resultados e documentos</small></div>
-   <button class="sqiPzBtn" onclick="sqiPzClose()">FECHAR</button>
-  </div>
-  <div class="sqiPzNav">
-   <button class="active" onclick="sqiPzTab('dashboard',this)">DASHBOARD</button>
-   <button onclick="sqiPzTab('criar',this)">CRIAR</button>
-   <button onclick="sqiPzTab('inscricoes',this)">INSCRIÇÕES</button>
-   <button onclick="sqiPzTab('sala',this)">SALA</button>
-   <button onclick="sqiPzTab('resultados',this)">RESULTADOS</button>
-   <button onclick="sqiPzTab('historico',this)">HISTÓRICO</button>
-  </div>
-  <div id="sqiPzContent"></div>
- </div>
-</div>
-
-<script>
-(function(){
- const KEY='sqi_personalizada_complete_v1';
- const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}};
- const save=v=>localStorage.setItem(KEY,JSON.stringify(v));
- const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
- const fmt=v=>v?new Date(v).toLocaleString('pt-BR'):'—';
- const uid=p=>p+Date.now()+Math.random().toString(36).slice(2,6);
- const status=x=>'<span class="sqiPzPill">'+esc(x)+'</span>';
-
- window.sqiPzOpen=function(){document.getElementById('sqiPersonalizadaModal').classList.add('open');sqiPzTab('dashboard',document.querySelector('#sqiPersonalizadaModal .sqiPzNav button'))};
- window.sqiPzClose=function(){document.getElementById('sqiPersonalizadaModal').classList.remove('open')};
- window.sqiPzTab=function(tab,btn){
-   document.querySelectorAll('#sqiPersonalizadaModal .sqiPzNav button').forEach(x=>x.classList.remove('active'));
-   if(btn)btn.classList.add('active');
-   ({dashboard:renderDashboard,criar:renderCreate,inscricoes:renderRegistrations,sala:renderRoom,resultados:renderResults,historico:renderHistory}[tab]||renderDashboard)();
- };
-
- function data(){return read()}
- function renderDashboard(){
-   const a=data(),ab=a.filter(x=>x.status==='ABERTA').length,run=a.filter(x=>x.status==='EM ANDAMENTO').length,fin=a.filter(x=>x.status==='FINALIZADA').length;
-   document.getElementById('sqiPzContent').innerHTML=
-    '<div class="sqiPzGrid">'+
-    '<div class="sqiPzCard"><h3>ABERTAS</h3><div class="sqiPzNumber">'+ab+'</div></div>'+
-    '<div class="sqiPzCard"><h3>EM ANDAMENTO</h3><div class="sqiPzNumber">'+run+'</div></div>'+
-    '<div class="sqiPzCard"><h3>FINALIZADAS</h3><div class="sqiPzNumber">'+fin+'</div></div>'+
-    '<div class="sqiPzCard"><h3>TOTAL</h3><div class="sqiPzNumber">'+a.length+'</div></div></div>'+
-    '<div class="sqiPzCard"><h3>PERSONALIZADAS RECENTES</h3>'+eventTable(a.slice().reverse().slice(0,15))+'</div>';
- }
- function renderCreate(){
-   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>CRIAR PERSONALIZADA</h3><div class="sqiPzForm">'+
-    '<input id="pzTitle" placeholder="Nome da personalizada">'+
-    '<select id="pzFormat"><option value="TRIO">TRIO</option><option value="QUARTETO">QUARTETO</option></select>'+
-    '<input id="pzSlots" type="number" min="1" placeholder="Vagas">'+
-    '<input id="pzDate" type="datetime-local">'+
-    '<input id="pzOrganizer" placeholder="Organizador">'+
-    '<input id="pzMap" placeholder="Mapa / modo">'+
-    '<input id="pzRoom" placeholder="Código da sala">'+
-    '<input id="pzPassword" placeholder="Senha da sala">'+
-    '<textarea id="pzRules" placeholder="Regras / informações da partida"></textarea>'+
-    '<button class="sqiPzBtn" style="grid-column:1/-1" onclick="sqiPzCreate()">CRIAR PERSONALIZADA</button>'+
-    '</div></div>';
- }
- function eventTable(a){
-   if(!a.length)return '<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>';
-   return '<div style="overflow:auto"><table class="sqiPzTable"><thead><tr><th>EVENTO</th><th>FORMATO</th><th>VAGAS</th><th>INSCRITOS</th><th>STATUS</th><th>DATA</th><th>AÇÕES</th></tr></thead><tbody>'+
-    a.map(x=>'<tr><td><b>'+esc(x.title)+'</b></td><td>'+esc(x.format)+'</td><td>'+x.slots+'</td><td>'+x.players.length+'</td><td>'+status(x.status)+'</td><td>'+esc(x.dateDisplay)+'</td><td><div class="sqiPzActions"><button class="sqiPzBtn" onclick="sqiPzSelect(\''+x.id+'\')">ABRIR</button><button class="sqiPzBtn" onclick="sqiPzPDF(\''+x.id+'\')">PDF</button></div></td></tr>').join('')+
-    '</tbody></table></div>';
- }
- function renderRegistrations(){
-   const a=data();
-   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>INSCRIÇÕES E RESERVAS</h3>'+
-    (a.length?a.map(x=>'<div style="border-bottom:1px solid #29292d;padding:10px 0"><b>'+esc(x.title)+'</b> · '+esc(x.format)+' · '+status(x.status)+'<br><small>'+x.players.length+'/'+x.slots+' vagas ocupadas · '+esc(x.dateDisplay)+'</small><div class="sqiPzActions" style="margin-top:7px"><button class="sqiPzBtn" onclick="sqiPzAddPlayer(\''+x.id+'\')">INSERIR JOGADOR</button><button class="sqiPzBtn" onclick="sqiPzReserve(\''+x.id+'\')">RESERVA</button><button class="sqiPzBtn" onclick="sqiPzSelect(\''+x.id+'\')">ABRIR</button></div></div>').join(''):'<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>')+
-    '</div>';
- }
- function renderRoom(){
-   const a=data();
-   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>SALAS E PRESENÇA</h3>'+
-    (a.length?a.map(x=>'<div style="border-bottom:1px solid #29292d;padding:10px 0"><b>'+esc(x.title)+'</b><br><small>Sala: '+esc(x.room||'—')+' · Senha: '+esc(x.password||'—')+'</small><br><button class="sqiPzBtn" onclick="sqiPzPresence(\''+x.id+'\')">CONTROLAR PRESENÇA</button> <button class="sqiPzBtn" onclick="sqiPzStart(\''+x.id+'\')">INICIAR PARTIDA</button> <button class="sqiPzBtn" onclick="sqiPzSelect(\''+x.id+'\')">ABRIR</button></div>').join(''):'<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>')+
-    '</div>';
- }
- function renderResults(){
-   const a=data();
-   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>RESULTADOS E CLASSIFICAÇÃO</h3>'+
-    (a.length?a.map(x=>'<div style="border-bottom:1px solid #29292d;padding:10px 0"><b>'+esc(x.title)+'</b> · '+status(x.status)+'<br><button class="sqiPzBtn" onclick="sqiPzScores(\''+x.id+'\')">LANÇAR RESULTADOS</button> <button class="sqiPzBtn" onclick="sqiPzPDF(\''+x.id+'\')">BAIXAR PDF</button></div>').join(''):'<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>')+
-    '</div>';
- }
- function renderHistory(){
-   const a=data().filter(x=>x.status==='FINALIZADA');
-   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>HISTÓRICO</h3>'+eventTable(a)+'</div>';
- }
- window.sqiPzCreate=function(){
-   const title=document.getElementById('pzTitle').value.trim();
-   if(!title){alert('Informe o nome da personalizada.');return}
-   const a=data(),raw=document.getElementById('pzDate').value;
-   const x={id:uid('PZ'),title,format:document.getElementById('pzFormat').value,slots:Math.max(1,Number(document.getElementById('pzSlots').value||0)),date:raw, dateDisplay:raw?new Date(raw).toLocaleString('pt-BR'):'',organizer:document.getElementById('pzOrganizer').value,map:document.getElementById('pzMap').value,room:document.getElementById('pzRoom').value,password:document.getElementById('pzPassword').value,rules:document.getElementById('pzRules').value,players:[],reservas:[],status:'ABERTA',createdAt:new Date().toISOString()};
-   a.push(x);save(a);alert('Personalizada criada com sucesso.');sqiPzTab('dashboard',document.querySelector('#sqiPersonalizadaModal .sqiPzNav button'));
- };
- window.sqiPzAddPlayer=function(id){
-   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
-   if(x.players.length>=x.slots){alert('Todas as vagas estão ocupadas. Use RESERVA.');return}
-   const name=prompt('Nome do jogador:');if(!name)return;
-   const nick=prompt('Nick:')||'',team=prompt('Trio / equipe:')||'';
-   x.players.push({id:uid('PL'),name,nick,team,present:false,score:0,kills:0,position:'',registeredAt:new Date().toISOString()});
-   save(a);renderRegistrations();
- };
- window.sqiPzReserve=function(id){
-   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
-   const name=prompt('Nome para reserva:');if(!name)return;
-   x.reservas.push({id:uid('R'),name,nick:prompt('Nick:')||'',createdAt:new Date().toISOString()});
-   save(a);alert('Jogador adicionado à reserva.');renderRegistrations();
- };
- window.sqiPzPresence=function(id){
-   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
-   if(!x.players.length){alert('Não há jogadores inscritos.');return}
-   x.players.forEach(p=>{const v=confirm('Presente: '+p.name+' ('+(p.nick||'sem nick')+')?');p.present=v});
-   save(a);alert('Presença salva.');
- };
- window.sqiPzStart=function(id){
-   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
-   x.status='EM ANDAMENTO';x.startedAt=new Date().toISOString();x.startedDisplay=new Date().toLocaleString('pt-BR');save(a);alert('Partida iniciada.');renderRoom();
- };
- window.sqiPzScores=function(id){
-   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
-   if(!x.players.length){alert('Cadastre os jogadores primeiro.');return}
-   x.players.forEach((p,i)=>{const k=prompt('Kills de '+p.name+':',String(p.kills||0));p.kills=Number(k)||0;const sc=prompt('Pontuação total de '+p.name+':',String(p.score||0));p.score=Number(sc)||0;const pos=prompt('Colocação de '+p.name+':',String(p.position||i+1));p.position=Number(pos)||i+1});
-   x.players.sort((a,b)=>(a.position||999)-(b.position||999));x.players.forEach((p,i)=>p.position=i+1);
-   x.status='FINALIZADA';x.finishedAt=new Date().toISOString();x.finishedDisplay=new Date().toLocaleString('pt-BR');save(a);alert('Resultado salvo e classificação atualizada.');renderResults();
- };
- window.sqiPzSelect=function(id){
-   const x=data().find(v=>v.id===id);if(!x)return;
-   alert('PERSONALIZADA: '+x.title+'\nFormato: '+x.format+'\nJogadores: '+x.players.length+'/'+x.slots+'\nStatus: '+x.status+'\nSala: '+(x.room||'—')+'\nSenha: '+(x.password||'—')+'\nData: '+(x.dateDisplay||'—'));
- };
- window.sqiPzPDF=function(id){
-   const x=data().find(v=>v.id===id);if(!x)return;
-   const w=window.open('','_blank');if(!w){alert('Permita pop-ups para gerar o PDF.');return}
-   const rows=x.players.slice().sort((a,b)=>(a.position||999)-(b.position||999)).map((p,i)=>'<tr><td>'+(p.position||i+1)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.nick||'')+'</td><td>'+esc(p.team||'')+'</td><td>'+(p.kills||0)+'</td><td>'+(p.score||0)+'</td><td>'+(p.present?'SIM':'NÃO')+'</td></tr>').join('');
-   w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(x.title)+'</title><style>body{font-family:Arial;padding:28px;color:#111}h1{margin-bottom:5px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #aaa;padding:7px;text-align:left;font-size:12px}.meta{line-height:1.7}</style></head><body><h1>'+esc(x.title)+'</h1><div class="meta"><b>Formato:</b> '+esc(x.format)+'<br><b>Data:</b> '+esc(x.dateDisplay)+'<br><b>Organizador:</b> '+esc(x.organizer)+'<br><b>Mapa/Modo:</b> '+esc(x.map)+'<br><b>Sala:</b> '+esc(x.room)+'<br><b>Status:</b> '+esc(x.status)+'</div><table><thead><tr><th>Pos.</th><th>Jogador</th><th>Nick</th><th>Equipe</th><th>Kills</th><th>Pontos</th><th>Presença</th></tr></thead><tbody>'+rows+'</tbody></table><p><b>Regras/Observações:</b> '+esc(x.rules||'')+'</p><script>window.onload=function(){window.print()}</script></body></html>');w.document.close();
- };
- // Add a non-invasive opener to existing text/buttons that already mention Personalizada.
- function attach(){
-   const els=[...document.querySelectorAll('button,a')].filter(e=>/PERSONALIZADA/i.test((e.textContent||'').trim()));
-   els.forEach(e=>{if(e.dataset.sqiPzBound)return;e.dataset.sqiPzBound='1';e.addEventListener('click',function(ev){ev.preventDefault();sqiPzOpen()})});
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach);else attach();
-})();
-</script>
-
 </body>
 </html>
