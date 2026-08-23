@@ -489,7 +489,7 @@ button{font:inherit}
   <div class="navlinks">
    <a href="#recursos">RECURSOS</a><a href="#ranking">RANKING</a><a href="#sqi">SQI</a><a href="#ranking-sqi-public">RANKING SQI</a><a href="#intelligence-public">INTELLIGENCE</a><a href="#academy">ACADEMY</a>
   </div>
-  <div style="display:flex;gap:8px;align-items:center"><button class="nav-cta" onclick="openRecruitment()">RECRUTAMENTO</button><button class="nav-cta" onclick="openRegister()">CADASTRAR EQUIPE</button><button class="nav-cta" style="background:#111;color:#fff;border-color:#111" onclick="openAdminLogin()">PAINEL ADM</button></div>
+  <div style="display:flex;gap:8px;align-items:center"><button class="nav-cta" onclick="openRecruitment()">RECRUTAMENTO</button><button class="nav-cta" onclick="openRegister()">CADASTRAR EQUIPE</button><button class="nav-cta" style="background:#111;color:#fff;border-color:#111" onclick="openAdminLogin()">PAINEL ADM</button><button class="nav-cta" onclick="openTrainerLogin()">PAINEL TREINADOR</button></div>
  </div>
 </nav>
 
@@ -794,7 +794,7 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='
     <button class="admin-tab active" onclick="showAdminTab('dashboard',this)">DASHBOARD</button>
     <button class="admin-tab" onclick="showAdminTab('requests',this)">CADASTROS</button>
     <button class="admin-tab" onclick="showAdminTab('teams',this)">EQUIPES</button>
-    <button class="admin-tab" onclick="showAdminTab('results',this)">RESULTADOS</button><button class="admin-tab" onclick="showAdminTab('scoring',this)">PONTUAÇÃO</button><button class="admin-tab" onclick="showAdminTab('recruitment',this)">RECRUTAMENTO</button><button class="admin-tab" onclick="showAdminTab('sqiRanking',this)">RANKING SQI</button><button class="admin-tab" onclick="showAdminTab('intelligence',this)">SQI INTELLIGENCE</button>
+    <button class="admin-tab" onclick="showAdminTab('results',this)">RESULTADOS</button><button class="admin-tab" onclick="showAdminTab('scoring',this)">PONTUAÇÃO</button><button class="admin-tab" onclick="showAdminTab('recruitment',this)">RECRUTAMENTO</button><button class="admin-tab" onclick="showAdminTab('sqiRanking',this)">RANKING SQI</button><button class="admin-tab" onclick="showAdminTab('intelligence',this)">SQI INTELLIGENCE</button><button class="admin-tab" onclick="showAdminTab('trainers',this)">TREINADORES</button>
    </div>
    <div id="adminDashboard"></div>
 <div class="admin-card" id="sqiSiteStatsAdmin">
@@ -816,9 +816,29 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='
   </div>
 </div>
 
-   <div id="adminRequests" style="display:none"></div>
+   <div id="adminRequests" style="display:none"></div><div id="adminTrainers" style="display:none"></div>
    <div id="adminTeams" style="display:none"></div>
    <div id="adminResults" style="display:none"></div><div id="adminScoring" style="display:none"></div><div id="adminRecruitment" style="display:none"></div><div id="adminSqiRanking" style="display:none"></div><div id="adminIntelligence" style="display:none"></div>
+  </div>
+ </div>
+</div>
+
+<div class="app-modal" id="trainerLoginApp">
+ <div class="app-box" style="max-width:420px">
+  <div class="app-head"><div><h2>PAINEL DO TREINADOR</h2><p>Acesso individual para avaliação de testes.</p></div><button class="app-close" onclick="closeTrainerLogin()">×</button></div>
+  <div class="app-field"><label>USUÁRIO</label><input id="trainerUser" autocomplete="username" placeholder="Seu usuário"></div>
+  <div class="app-field"><label>SENHA</label><input id="trainerPass" type="password" autocomplete="current-password" placeholder="Sua senha" onkeydown="if(event.key==='Enter')loginTrainer()"></div>
+  <div class="app-actions"><button class="btn light" onclick="closeTrainerLogin()">CANCELAR</button><button class="btn gold" onclick="loginTrainer()">ENTRAR</button></div>
+  <div class="app-msg" id="trainerLoginMsg"></div>
+ </div>
+</div>
+
+<div class="app-modal" id="trainerApp">
+ <div class="admin-shell">
+  <div class="admin-top"><b>SQI · PAINEL TREINADOR</b><span id="trainerSessionLabel">ACESSO INDIVIDUAL</span><button class="app-close" onclick="closeTrainerApp()" style="background:#fff">×</button></div>
+  <div class="admin-body">
+   <div class="admin-card" id="trainerPushCard"><h3>🔔 NOTIFICAÇÕES</h3><p class="score-note">Ative as notificações neste celular para receber aviso quando um novo teste for atribuído.</p><button class="small-btn gold" onclick="enableTrainerNotifications()">ATIVAR NOTIFICAÇÕES</button><span id="trainerPushMsg" class="score-note"></span></div>
+   <div class="admin-card"><h3>🧪 MEUS TESTES</h3><div id="trainerTestsList"></div></div>
   </div>
  </div>
 </div>
@@ -860,15 +880,39 @@ function submitTeam(e){
 }
 function showAdminTab(tab,btn){
  document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
- ['dashboard','requests','teams','results','scoring','recruitment','sqiRanking','intelligence'].forEach(x=>{const el=document.getElementById('admin'+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.style.display=x===tab?'block':'none'});
+ ['dashboard','requests','teams','results','scoring','recruitment','sqiRanking','intelligence','trainers'].forEach(x=>{const el=document.getElementById('admin'+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.style.display=x===tab?'block':'none'});
  renderAdminAll();
 }
+const SQI_TRAINER_STATE_KEY='sqi_trainer_session';
+let sqiTrainerSession=null;
+try{sqiTrainerSession=JSON.parse(localStorage.getItem(SQI_TRAINER_STATE_KEY)||'null')}catch(e){sqiTrainerSession=null}
+function openTrainerLogin(){document.getElementById('trainerLoginApp').classList.add('open');setTimeout(()=>document.getElementById('trainerUser').focus(),100)}
+function closeTrainerLogin(){document.getElementById('trainerLoginApp').classList.remove('open');document.getElementById('trainerUser').value='';document.getElementById('trainerPass').value='';document.getElementById('trainerLoginMsg').textContent=''}
+function closeTrainerApp(){document.getElementById('trainerApp').classList.remove('open');if(trainerPollTimer)clearInterval(trainerPollTimer);trainerPollTimer=null}
+let trainerPollTimer=null;
+async function trainerRpc(path,body){const r=await fetch(SQI_DB_URL+'/rest/v1/rpc/'+path,{method:'POST',headers:sqiHeaders(),body:JSON.stringify(body||{})});const j=await r.json().catch(()=>null);if(!r.ok)throw new Error(j?.message||j?.error||'Falha no banco.');return j}
+async function loginTrainer(){
+ const user=document.getElementById('trainerUser').value.trim(),pass=document.getElementById('trainerPass').value;
+ if(!user||!pass){document.getElementById('trainerLoginMsg').textContent='Informe usuário e senha.';return}
+ try{const rows=await trainerRpc('sqi_trainer_login',{p_username:user,p_password:pass});if(!Array.isArray(rows)||!rows[0])throw new Error('Usuário ou senha inválidos.');sqiTrainerSession=rows[0];localStorage.setItem(SQI_TRAINER_STATE_KEY,JSON.stringify(sqiTrainerSession));closeTrainerLogin();openTrainerApp();}catch(e){document.getElementById('trainerLoginMsg').textContent=e.message}}
+function openTrainerApp(){if(!sqiTrainerSession)return openTrainerLogin();document.getElementById('trainerApp').classList.add('open');document.getElementById('trainerSessionLabel').textContent=(sqiTrainerSession.name||sqiTrainerSession.username)+' · TREINADOR';loadTrainerTests();if(trainerPollTimer)clearInterval(trainerPollTimer);trainerPollTimer=setInterval(loadTrainerTests,20000)}
+async function loadTrainerTests(){if(!sqiTrainerSession)return;try{const url=SQI_DB_URL+'/rest/v1/sqi_training_tests?assigned_trainer_id=eq.'+encodeURIComponent(sqiTrainerSession.id)+'&select=*&order=created_at.desc';const r=await fetch(url,{headers:sqiHeaders()});const rows=await r.json();if(!r.ok)throw new Error(rows?.message||'Falha ao carregar testes.');renderTrainerTests(rows);await checkTrainerNotifications()}catch(e){document.getElementById('trainerTestsList').innerHTML='<div class="score-note" style="color:#a33">'+esc(e.message)+'</div>'}}
+function renderTrainerTests(rows){const el=document.getElementById('trainerTestsList');if(!el)return;if(!rows.length){el.innerHTML='<div class="score-note">Nenhum teste atribuído ainda.</div>';return}el.innerHTML=rows.map(t=>{const action=t.status==='in_progress'?'<button class="small-btn gold" onclick="finishTrainerTest(\''+t.id+'\')">FINALIZAR TESTE</button>':(t.status==='new'||t.status==='scheduled'?'<button class="small-btn gold" onclick="startTrainerTest(\''+t.id+'\')">INICIAR TESTE</button>':'');const duration=t.duration_seconds?Math.floor(t.duration_seconds/60)+'min '+(t.duration_seconds%60)+'s':(t.started_at?'EM ANDAMENTO':'—');return '<div class="admin-card" style="margin-top:10px"><b>'+esc(t.candidate_name)+'</b><div class="score-note">'+esc(t.game||'Warzone')+' · '+esc(t.status)+' · Duração: '+duration+'</div><div class="admin-actions" style="margin-top:8px">'+action+'</div></div>'}).join('')}
+async function startTrainerTest(id){try{await trainerRpc('sqi_start_training_test',{p_test_id:id,p_trainer_id:sqiTrainerSession.id});await loadTrainerTests()}catch(e){alert(e.message)}}
+async function finishTrainerTest(id){const score=prompt('Nota/pontuação do teste (opcional):','');const notes=prompt('Observações do treinador (opcional):','');try{await trainerRpc('sqi_finish_training_test',{p_test_id:id,p_trainer_id:sqiTrainerSession.id,p_score:score===''?null:Number(score),p_notes:notes||null});await loadTrainerTests()}catch(e){alert(e.message)}}
+async function checkTrainerNotifications(){try{const url=SQI_DB_URL+'/rest/v1/sqi_trainer_notifications?trainer_id=eq.'+encodeURIComponent(sqiTrainerSession.id)+'&read_at=is.null&select=*&order=created_at.desc';const r=await fetch(url,{headers:sqiHeaders()});const rows=await r.json();if(!r.ok)return;if(rows.length){if('Notification' in window&&Notification.permission==='granted'){rows.forEach(n=>new Notification(n.title,{body:n.body}))}const ids=rows.map(x=>x.id);await fetch(SQI_DB_URL+'/rest/v1/sqi_trainer_notifications?id=in.('+ids.join(',')+')',{method:'PATCH',headers:sqiHeaders({'Prefer':'return=minimal'}),body:JSON.stringify({read_at:new Date().toISOString()})});}}
+catch(e){console.warn('trainer notifications',e)}}
+async function enableTrainerNotifications(){try{if(!('Notification' in window))throw new Error('Este navegador não suporta notificações.');const p=await Notification.requestPermission();document.getElementById('trainerPushMsg').textContent=p==='granted'?'✓ Notificações ativadas neste celular.':'Permissão de notificações não concedida.';if(p==='granted')await checkTrainerNotifications()}catch(e){document.getElementById('trainerPushMsg').textContent=e.message}}
+async function renderTrainerAdmin(){const el=document.getElementById('adminTrainers');if(!el)return;let trainers=[];try{const r=await fetch(SQI_DB_URL+'/rest/v1/sqi_trainers?select=id,name,nick,email,username,role,active,created_at&order=created_at.desc',{headers:sqiHeaders()});trainers=await r.json();if(!Array.isArray(trainers))trainers=[]}catch(e){}el.innerHTML='<div class="admin-card"><h3>👥 TREINADORES / RECRUTADORES</h3><p class="score-note">Crie acessos individuais e atribua testes sem compartilhar a senha do ADM.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="newTrainerName" class="sqi-rank-input" placeholder="Nome"><input id="newTrainerUser" class="sqi-rank-input" placeholder="Usuário"><input id="newTrainerPass" class="sqi-rank-input" type="password" placeholder="Senha"><select id="newTrainerRole" class="sqi-rank-input"><option value="trainer">Treinador</option><option value="recruiter">Recrutador</option></select></div><button class="small-btn gold" style="margin-top:8px" onclick="createTrainerAccount()">CRIAR ACESSO</button><span id="trainerCreateMsg" class="score-note"></span></div><div class="admin-card"><h3>NOVO TESTE</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="testCandidate" class="sqi-rank-input" placeholder="Nome do candidato"><input id="testContact" class="sqi-rank-input" placeholder="WhatsApp/contato"><select id="testTrainer" class="sqi-rank-input"><option value="">Selecione treinador</option>'+trainers.filter(t=>t.active).map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+esc(t.username||'')+'</option>').join('')+'</select><input id="testSchedule" class="sqi-rank-input" type="datetime-local"></div><textarea id="testNotes" class="sqi-rank-input" placeholder="Observações" style="margin-top:8px;width:100%;min-height:70px"></textarea><button class="small-btn gold" style="margin-top:8px" onclick="assignTrainingTest()">ENVIAR TESTE AO TREINADOR</button><span id="testAssignMsg" class="score-note"></span></div>'}
+async function createTrainerAccount(){const name=document.getElementById('newTrainerName').value.trim(),user=document.getElementById('newTrainerUser').value.trim(),pass=document.getElementById('newTrainerPass').value,role=document.getElementById('newTrainerRole').value;if(!name||!user||!pass){document.getElementById('trainerCreateMsg').textContent='Preencha nome, usuário e senha.';return}try{await trainerRpc('sqi_create_trainer',{p_name:name,p_username:user,p_password:pass,p_role:role});document.getElementById('trainerCreateMsg').textContent='✓ Acesso criado.';renderTrainerAdmin()}catch(e){document.getElementById('trainerCreateMsg').textContent='Erro: '+e.message}}
+async function assignTrainingTest(){const candidate=document.getElementById('testCandidate').value.trim(),contact=document.getElementById('testContact').value.trim(),trainer=document.getElementById('testTrainer').value,sched=document.getElementById('testSchedule').value,notes=document.getElementById('testNotes').value.trim();if(!candidate||!trainer){document.getElementById('testAssignMsg').textContent='Informe candidato e treinador.';return}try{await trainerRpc('sqi_assign_training_test',{p_candidate_name:candidate,p_candidate_contact:contact,p_trainer_id:trainer,p_game:'Warzone',p_notes:notes||null,p_scheduled_at:sched?new Date(sched).toISOString():null});document.getElementById('testAssignMsg').textContent='✓ Teste enviado e notificação criada.';['testCandidate','testContact','testSchedule','testNotes'].forEach(id=>document.getElementById(id).value='');}catch(e){document.getElementById('testAssignMsg').textContent='Erro: '+e.message}}
 function renderAdminAll(){
  const req=getRequests(),teams=getTeams(),results=getResults();
  renderScoringPanel();
  renderRecruitmentAdmin();
  renderSqiRanking();
  renderIntelligence();
+ renderTrainerAdmin();
  document.getElementById('adminDashboard').innerHTML='<div class="admin-card"><h3>VISÃO GERAL</h3><div class="stat-admin"><div><strong>'+req.filter(x=>x.status==='PENDENTE').length+'</strong><span>CADASTROS PENDENTES</span></div><div><strong>'+teams.length+'</strong><span>EQUIPES APROVADAS</span></div><div><strong>'+results.length+'</strong><span>RESULTADOS</span></div><div><strong>'+getRecruitments().filter(x=>x.status==='PENDENTE').length+'</strong><span>RECRUTAMENTOS PENDENTES</span></div></div></div><div class="admin-card"><h3>MOTOR DE PONTUAÇÃO</h3><p class="score-note">Pontuação configurável por colocação, kills, dano e views. Abra a aba <b>PONTUAÇÃO</b> para editar a fórmula e lançar resultados.</p></div>';
  document.getElementById('adminRequests').innerHTML='<div class="admin-card"><h3>INSCRIÇÕES RECEBIDAS</h3><div style="overflow:auto"><table class="admin-table"><thead><tr><th>LOGO</th><th>EQUIPE</th><th>CAPITÃO</th><th>WHATSAPP</th><th>JOGADORES</th><th>STATUS</th><th>AÇÕES</th></tr></thead><tbody>'+req.map((r,i)=>'<tr><td><img class="admin-logo" src="'+r.logo+'"></td><td><b>'+esc(r.name)+'</b><br><span class="pill">'+esc(r.tag)+'</span></td><td>'+esc(r.captain)+'</td><td>'+esc(r.captainPhone)+'</td><td>'+r.players.map(esc).join('<br>')+'</td><td>'+esc(r.status)+'</td><td><div class="admin-actions">'+(r.status==='PENDENTE'?'<button class="small-btn gold" onclick="approveTeam('+r.id+')">APROVAR</button><button class="small-btn red" onclick="rejectTeam('+r.id+')">RECUSAR</button>':'')+'<button class="small-btn" onclick="removeRequest('+r.id+')">EXCLUIR</button></div></td></tr>').join('')+'</tbody></table></div></div>';
  document.getElementById('adminTeams').innerHTML='<div class="admin-card"><h3>EQUIPES OFICIAIS</h3><div style="overflow:auto"><table class="admin-table"><thead><tr><th>LOGO</th><th>EQUIPE</th><th>CAPITÃO</th><th>WHATSAPP</th><th>JOGADORES</th><th>AÇÃO</th></tr></thead><tbody>'+teams.map(t=>'<tr><td><img class="admin-logo" src="'+t.logo+'"></td><td><b>'+esc(t.name)+'</b><br><span class="pill">'+esc(t.tag)+'</span></td><td>'+esc(t.captain)+'</td><td>'+esc(t.captainPhone)+'</td><td>'+t.players.map(esc).join('<br>')+'</td><td><button class="small-btn red" onclick="removeTeam('+t.id+')">EXCLUIR</button></td></tr>').join('')+'</tbody></table></div></div>';
