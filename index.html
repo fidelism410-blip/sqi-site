@@ -928,7 +928,28 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 <script>
 const DEFAULT_SCORE_RULES={kill:1,damagePer1000:0,viewsPer1000:0,placements:[15,12,10,8,7,5,4,3,2,1,0,0,0,0,0,0]};
 function getScoreRules(){
-  try{return {...DEFAULT_SCORE_RULES,...JSON.parse(localStorage.getItem('sqi_score_rules')||'{}')}}catch(e){return {...DEFAULT_SCORE_RULES}}
+  const defaults={...DEFAULT_SCORE_RULES,placements:[...DEFAULT_SCORE_RULES.placements]};
+  try{
+    const saved=JSON.parse(localStorage.getItem('sqi_score_rules')||'null');
+    if(!saved||typeof saved!=='object') return defaults;
+    const placements=Array.isArray(saved.placements)?saved.placements.map(v=>Number(v)||0):[];
+    // Migra configurações antigas que tinham todas as posições zeradas.
+    const hasAnyPlacementPoints=placements.some(v=>v>0);
+    const mergedPlacements=defaults.placements.map((v,i)=>(
+      hasAnyPlacementPoints && placements[i]!==undefined ? placements[i] : v
+    ));
+    const rules={
+      kill:Number.isFinite(Number(saved.kill))?Number(saved.kill):defaults.kill,
+      damagePer1000:Number.isFinite(Number(saved.damagePer1000))?Number(saved.damagePer1000):defaults.damagePer1000,
+      viewsPer1000:Number.isFinite(Number(saved.viewsPer1000))?Number(saved.viewsPer1000):defaults.viewsPer1000,
+      placements:mergedPlacements
+    };
+    // Corrige imediatamente o armazenamento local para que a regra certa permaneça.
+    localStorage.setItem('sqi_score_rules',JSON.stringify(rules));
+    return rules;
+  }catch(e){
+    return defaults;
+  }
 }
 function saveScoreRules(){
   const placements=[...document.querySelectorAll('.score-place input')].map(x=>Number(x.value)||0);
@@ -968,7 +989,7 @@ function calcScoreItem(item,r){
 }
 function updateScorePreview(){
   const r=getScoreRules(),rows=document.querySelectorAll('#scoreRows .score-row');let grand=0;
-  rows.forEach(row=>{const item={pos:Math.max(1,Number(row.querySelector('.score-pos')?.value)||1),kills:Math.max(0,Number(row.querySelector('.score-kills')?.value)||0),damage:Math.max(0,Number(row.querySelector('.score-damage-value')?.value)||0),views:Math.max(0,Number(row.querySelector('.score-views-value')?.value)||0)};const c=calcScoreItem(item,r);grand+=c.total;const out=row.querySelector('.score-row-total');if(out)out.textContent=c.total.toFixed(2)});
+  rows.forEach(row=>{const item={pos:Math.max(1,Number(row.querySelector('.score-pos')?.value)||1),kills:Math.max(0,Number(row.querySelector('.score-kills')?.value)||0),damage:Math.max(0,Number(row.querySelector('.score-damage-value')?.value)||0),views:Math.max(0,Number(row.querySelector('.score-views-value')?.value)||0)};const c=calcScoreItem(item,r);grand+=c.total;const out=row.querySelector('.score-row-total');if(out)out.textContent=c.total.toFixed(2);const place=row.querySelector('.score-row-placement');if(place)place.textContent=c.placement.toFixed(2)});
   const total=document.getElementById('calcScore');if(total)total.textContent=grand.toFixed(2);
   const extra=document.getElementById('calcExtra');if(extra){let e=0;rows.forEach(row=>{const item={pos:1,kills:0,damage:Number(row.querySelector('.score-damage-value')?.value)||0,views:Number(row.querySelector('.score-views-value')?.value)||0};e+=calcScoreItem(item,r).damagePts+calcScoreItem(item,r).viewPts});extra.textContent=e.toFixed(2)}
 }
@@ -1043,7 +1064,7 @@ function launchScoreResult(){
   const ids=items.map(x=>String(x.teamId));if(new Set(ids).size!==ids.length){msg.textContent='Uma equipe não pode aparecer duas vezes na mesma partida.';return}
   const teams=getTeams();const list=getResults();
   for(const item of items){const team=teams.find(t=>String(t.id)===String(item.teamId));if(!team){msg.textContent='Equipe inválida.';return}if(list.some(x=>String(x.match)===String(match)&&String(x.teamId)===String(team.id))){msg.textContent='Já existe resultado dessa equipe nesta partida.';return}}
-  items.forEach(item=>{const team=teams.find(t=>String(t.id)===String(item.teamId)),c=calcScoreItem(item,r);list.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),match,teamId:team.id,team:team.name,logo:team.logo||'',pos:item.pos,kills:item.kills,damage:item.damage,views:item.views,placement:c.placement,killPts:c.killPts,damagePts:c.damagePts,viewPts:c.viewPts,total:c.total,createdAt:new Date().toISOString()})});
+  items.forEach(item=>{const team=teams.find(t=>String(t.id)===String(item.teamId)),c=calcScoreItem(item,r);list.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),match,teamId:team.id,team:team.name,logo:team.logo||'',pos:item.pos,placementPoints:c.placement,kills:item.kills,damage:item.damage,views:item.views,placement:c.placement,killPts:c.killPts,damagePts:c.damagePts,viewPts:c.viewPts,total:c.total,createdAt:new Date().toISOString()})});
   localStorage.setItem('sqi_match_results',JSON.stringify(list));
   msg.textContent='✓ '+items.length+' equipes lançadas. Pontuação salva no banco central.';
   renderAdminAll();
@@ -1207,7 +1228,7 @@ async function removeRecruit(id){
 
 <script>
 const SQI_DEFAULT_TEAMS=[];
-const SQI_DEFAULT_RULES={kill:1,damagePer1000:0,viewsPer1000:0,placements:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
+const SQI_DEFAULT_RULES={kill:1,damagePer1000:0,viewsPer1000:0,placements:[15,12,10,8,7,5,4,3,2,1,0,0,0,0,0,0]};
 function migrateSqiTeams(){
  try{
   const key='sqi_internal_teams';
@@ -1299,7 +1320,7 @@ function launchSqiResult(){
  const r=getSqiRules(),pos=Math.max(1,Number(document.getElementById('sqiResPos').value)||1),kills=Math.max(0,Number(document.getElementById('sqiResKills').value)||0),damage=Math.max(0,Number(document.getElementById('sqiResDamage').value)||0),views=Math.max(0,Number(document.getElementById('sqiResViews').value)||0);
  const p=Number(r.placements[pos-1]||0),k=kills*Number(r.kill||0),d=damage/1000*Number(r.damagePer1000||0),v=views/1000*Number(r.viewsPer1000||0),total=p+k+d+v;
  const results=getSqiResults();
- results.push({id:Date.now(),teamId:team.id,team:team.name,match:document.getElementById('sqiResMatch').value.trim()||'Partida',pos,kills,damage,views,total});
+ results.push({id:Date.now(),teamId:team.id,team:team.name,match:document.getElementById('sqiResMatch').value.trim()||'Partida',pos,placementPoints:p,kills,damage,views,total});
  saveSqiResults(results);
  msg.textContent='✓ '+team.name+' recebeu '+total.toFixed(2)+' pontos no Ranking SQI.';
  renderSqiRanking();
@@ -1337,7 +1358,7 @@ function renderSqiRanking(){
       <input id="sqiResViews" class="sqi-rank-input" type="number" min="0" value="0" placeholder="Views">
     </div>
     <div class="calc-grid" style="grid-template-columns:repeat(5,1fr);margin-top:10px">
-      <div class="calc-box"><small>POS</small><strong id="sqiCalcP">0.00</strong></div>
+      <div class="calc-box"><small>COLOCAÇÃO</small><strong id="sqiCalcP">0.00</strong></div>
       <div class="calc-box"><small>KILLS</small><strong id="sqiCalcK">0.00</strong></div>
       <div class="calc-box"><small>DANO</small><strong id="sqiCalcD">0.00</strong></div>
       <div class="calc-box"><small>VIEWS</small><strong id="sqiCalcV">0.00</strong></div>
@@ -1345,7 +1366,7 @@ function renderSqiRanking(){
     </div>
     <div style="margin-top:10px"><button class="small-btn gold" onclick="launchSqiResult()">LANÇAR PONTOS NO RANKING SQI</button> <span id="sqiResultMsg" class="score-note"></span></div>
    </div>
-   <div class="admin-card"><h3>📋 HISTÓRICO DO RANKING SQI</h3>${results.length?results.slice().reverse().map(r=>`<div class="sqi-history-row"><b>${esc(r.match)}</b><span>${esc(r.team)} · ${r.kills} K · ${r.damage} D · ${r.views} V</span><b>${Number(r.total).toFixed(2)} pts</b><button class="small-btn" onclick="deleteSqiResult(${r.id})">EXCLUIR</button></div>`).join(''):'<div class="sqi-empty">Nenhum ponto lançado. Ranking zerado.</div>'}</div>
+   <div class="admin-card"><h3>📋 HISTÓRICO DO RANKING SQI</h3>${results.length?results.slice().reverse().map(r=>`<div class="sqi-history-row"><b>${esc(r.match)}</b><span>${esc(r.team)} · ${r.pos}º lugar · ${Number(r.placementPoints||0).toFixed(2)} colocação · ${r.kills} K · ${r.damage} D · ${r.views} V</span><b>${Number(r.total).toFixed(2)} pts</b><button class="small-btn" onclick="deleteSqiResult(${r.id})">EXCLUIR</button></div>`).join(''):'<div class="sqi-empty">Nenhum ponto lançado. Ranking zerado.</div>'}</div>
   </div>
  </div>`;
  ['sqiResPos','sqiResKills','sqiResDamage','sqiResViews'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',calcSqiPreview)});
@@ -2189,5 +2210,178 @@ function renderAcademyProgress(){let done=0;SQI_LESSONS.forEach((_,i)=>{if(local
   window.addEventListener('visibilitychange',function(){try{if(document.visibilityState==='hidden'&&typeof sqiSaveScoreDraft==='function')sqiSaveScoreDraft()}catch(e){}});
 })();
 </script>
+
+<!-- SQI PERSONALIZADA — SISTEMA COMPLETO -->
+<style>
+#sqiPersonalizadaModal{display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.9);overflow:auto;padding:16px}
+#sqiPersonalizadaModal.open{display:block}
+.sqiPzShell{max-width:1180px;margin:20px auto;background:#09090b;color:#f4f4f4;border:1px solid #c9a84e;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:18px}
+.sqiPzHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #2d2d31;padding-bottom:12px}
+.sqiPzHeader small{display:block;color:#999;margin-top:4px}
+.sqiPzNav{display:flex;gap:7px;overflow:auto;padding:12px 0}
+.sqiPzNav button,.sqiPzBtn{border:0;border-radius:7px;padding:9px 12px;font-weight:800;cursor:pointer;background:#c9a84e;color:#111}
+.sqiPzNav button{background:#222225;color:#eee;white-space:nowrap}
+.sqiPzNav button.active{background:#c9a84e;color:#111}
+.sqiPzGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sqiPzCard{background:#151518;border:1px solid #2c2c31;border-radius:10px;padding:14px;margin-bottom:10px}
+.sqiPzCard h3{margin:0 0 9px;font-size:14px}
+.sqiPzNumber{font-size:29px;font-weight:900}
+.sqiPzForm{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sqiPzForm input,.sqiPzForm select,.sqiPzForm textarea{width:100%;box-sizing:border-box;padding:10px;background:#101012;color:#fff;border:1px solid #444;border-radius:7px}
+.sqiPzForm textarea{grid-column:1/-1;min-height:80px}
+.sqiPzTable{width:100%;border-collapse:collapse;font-size:12px}
+.sqiPzTable th,.sqiPzTable td{padding:9px;border-bottom:1px solid #29292d;text-align:left;vertical-align:middle}
+.sqiPzPill{display:inline-block;border-radius:99px;background:#28282d;padding:4px 8px;font-size:10px}
+.sqiPzActions{display:flex;gap:6px;flex-wrap:wrap}
+.sqiPzEmpty{color:#999;padding:8px 0}
+@media(max-width:720px){.sqiPzGrid{grid-template-columns:1fr 1fr}.sqiPzForm{grid-template-columns:1fr}.sqiPzTable{font-size:10px}.sqiPzShell{margin:0;padding:12px}}
+</style>
+
+<div id="sqiPersonalizadaModal">
+ <div class="sqiPzShell">
+  <div class="sqiPzHeader">
+   <div><strong style="font-size:19px">SQI · PERSONALIZADA</strong><small>Gestão de partidas, inscrições, salas, resultados e documentos</small></div>
+   <button class="sqiPzBtn" onclick="sqiPzClose()">FECHAR</button>
+  </div>
+  <div class="sqiPzNav">
+   <button class="active" onclick="sqiPzTab('dashboard',this)">DASHBOARD</button>
+   <button onclick="sqiPzTab('criar',this)">CRIAR</button>
+   <button onclick="sqiPzTab('inscricoes',this)">INSCRIÇÕES</button>
+   <button onclick="sqiPzTab('sala',this)">SALA</button>
+   <button onclick="sqiPzTab('resultados',this)">RESULTADOS</button>
+   <button onclick="sqiPzTab('historico',this)">HISTÓRICO</button>
+  </div>
+  <div id="sqiPzContent"></div>
+ </div>
+</div>
+
+<script>
+(function(){
+ const KEY='sqi_personalizada_complete_v1';
+ const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}};
+ const save=v=>localStorage.setItem(KEY,JSON.stringify(v));
+ const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+ const fmt=v=>v?new Date(v).toLocaleString('pt-BR'):'—';
+ const uid=p=>p+Date.now()+Math.random().toString(36).slice(2,6);
+ const status=x=>'<span class="sqiPzPill">'+esc(x)+'</span>';
+
+ window.sqiPzOpen=function(){document.getElementById('sqiPersonalizadaModal').classList.add('open');sqiPzTab('dashboard',document.querySelector('#sqiPersonalizadaModal .sqiPzNav button'))};
+ window.sqiPzClose=function(){document.getElementById('sqiPersonalizadaModal').classList.remove('open')};
+ window.sqiPzTab=function(tab,btn){
+   document.querySelectorAll('#sqiPersonalizadaModal .sqiPzNav button').forEach(x=>x.classList.remove('active'));
+   if(btn)btn.classList.add('active');
+   ({dashboard:renderDashboard,criar:renderCreate,inscricoes:renderRegistrations,sala:renderRoom,resultados:renderResults,historico:renderHistory}[tab]||renderDashboard)();
+ };
+
+ function data(){return read()}
+ function renderDashboard(){
+   const a=data(),ab=a.filter(x=>x.status==='ABERTA').length,run=a.filter(x=>x.status==='EM ANDAMENTO').length,fin=a.filter(x=>x.status==='FINALIZADA').length;
+   document.getElementById('sqiPzContent').innerHTML=
+    '<div class="sqiPzGrid">'+
+    '<div class="sqiPzCard"><h3>ABERTAS</h3><div class="sqiPzNumber">'+ab+'</div></div>'+
+    '<div class="sqiPzCard"><h3>EM ANDAMENTO</h3><div class="sqiPzNumber">'+run+'</div></div>'+
+    '<div class="sqiPzCard"><h3>FINALIZADAS</h3><div class="sqiPzNumber">'+fin+'</div></div>'+
+    '<div class="sqiPzCard"><h3>TOTAL</h3><div class="sqiPzNumber">'+a.length+'</div></div></div>'+
+    '<div class="sqiPzCard"><h3>PERSONALIZADAS RECENTES</h3>'+eventTable(a.slice().reverse().slice(0,15))+'</div>';
+ }
+ function renderCreate(){
+   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>CRIAR PERSONALIZADA</h3><div class="sqiPzForm">'+
+    '<input id="pzTitle" placeholder="Nome da personalizada">'+
+    '<select id="pzFormat"><option value="TRIO">TRIO</option><option value="QUARTETO">QUARTETO</option></select>'+
+    '<input id="pzSlots" type="number" min="1" placeholder="Vagas">'+
+    '<input id="pzDate" type="datetime-local">'+
+    '<input id="pzOrganizer" placeholder="Organizador">'+
+    '<input id="pzMap" placeholder="Mapa / modo">'+
+    '<input id="pzRoom" placeholder="Código da sala">'+
+    '<input id="pzPassword" placeholder="Senha da sala">'+
+    '<textarea id="pzRules" placeholder="Regras / informações da partida"></textarea>'+
+    '<button class="sqiPzBtn" style="grid-column:1/-1" onclick="sqiPzCreate()">CRIAR PERSONALIZADA</button>'+
+    '</div></div>';
+ }
+ function eventTable(a){
+   if(!a.length)return '<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>';
+   return '<div style="overflow:auto"><table class="sqiPzTable"><thead><tr><th>EVENTO</th><th>FORMATO</th><th>VAGAS</th><th>INSCRITOS</th><th>STATUS</th><th>DATA</th><th>AÇÕES</th></tr></thead><tbody>'+
+    a.map(x=>'<tr><td><b>'+esc(x.title)+'</b></td><td>'+esc(x.format)+'</td><td>'+x.slots+'</td><td>'+x.players.length+'</td><td>'+status(x.status)+'</td><td>'+esc(x.dateDisplay)+'</td><td><div class="sqiPzActions"><button class="sqiPzBtn" onclick="sqiPzSelect(\''+x.id+'\')">ABRIR</button><button class="sqiPzBtn" onclick="sqiPzPDF(\''+x.id+'\')">PDF</button></div></td></tr>').join('')+
+    '</tbody></table></div>';
+ }
+ function renderRegistrations(){
+   const a=data();
+   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>INSCRIÇÕES E RESERVAS</h3>'+
+    (a.length?a.map(x=>'<div style="border-bottom:1px solid #29292d;padding:10px 0"><b>'+esc(x.title)+'</b> · '+esc(x.format)+' · '+status(x.status)+'<br><small>'+x.players.length+'/'+x.slots+' vagas ocupadas · '+esc(x.dateDisplay)+'</small><div class="sqiPzActions" style="margin-top:7px"><button class="sqiPzBtn" onclick="sqiPzAddPlayer(\''+x.id+'\')">INSERIR JOGADOR</button><button class="sqiPzBtn" onclick="sqiPzReserve(\''+x.id+'\')">RESERVA</button><button class="sqiPzBtn" onclick="sqiPzSelect(\''+x.id+'\')">ABRIR</button></div></div>').join(''):'<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>')+
+    '</div>';
+ }
+ function renderRoom(){
+   const a=data();
+   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>SALAS E PRESENÇA</h3>'+
+    (a.length?a.map(x=>'<div style="border-bottom:1px solid #29292d;padding:10px 0"><b>'+esc(x.title)+'</b><br><small>Sala: '+esc(x.room||'—')+' · Senha: '+esc(x.password||'—')+'</small><br><button class="sqiPzBtn" onclick="sqiPzPresence(\''+x.id+'\')">CONTROLAR PRESENÇA</button> <button class="sqiPzBtn" onclick="sqiPzStart(\''+x.id+'\')">INICIAR PARTIDA</button> <button class="sqiPzBtn" onclick="sqiPzSelect(\''+x.id+'\')">ABRIR</button></div>').join(''):'<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>')+
+    '</div>';
+ }
+ function renderResults(){
+   const a=data();
+   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>RESULTADOS E CLASSIFICAÇÃO</h3>'+
+    (a.length?a.map(x=>'<div style="border-bottom:1px solid #29292d;padding:10px 0"><b>'+esc(x.title)+'</b> · '+status(x.status)+'<br><button class="sqiPzBtn" onclick="sqiPzScores(\''+x.id+'\')">LANÇAR RESULTADOS</button> <button class="sqiPzBtn" onclick="sqiPzPDF(\''+x.id+'\')">BAIXAR PDF</button></div>').join(''):'<div class="sqiPzEmpty">Nenhuma personalizada criada.</div>')+
+    '</div>';
+ }
+ function renderHistory(){
+   const a=data().filter(x=>x.status==='FINALIZADA');
+   document.getElementById('sqiPzContent').innerHTML='<div class="sqiPzCard"><h3>HISTÓRICO</h3>'+eventTable(a)+'</div>';
+ }
+ window.sqiPzCreate=function(){
+   const title=document.getElementById('pzTitle').value.trim();
+   if(!title){alert('Informe o nome da personalizada.');return}
+   const a=data(),raw=document.getElementById('pzDate').value;
+   const x={id:uid('PZ'),title,format:document.getElementById('pzFormat').value,slots:Math.max(1,Number(document.getElementById('pzSlots').value||0)),date:raw, dateDisplay:raw?new Date(raw).toLocaleString('pt-BR'):'',organizer:document.getElementById('pzOrganizer').value,map:document.getElementById('pzMap').value,room:document.getElementById('pzRoom').value,password:document.getElementById('pzPassword').value,rules:document.getElementById('pzRules').value,players:[],reservas:[],status:'ABERTA',createdAt:new Date().toISOString()};
+   a.push(x);save(a);alert('Personalizada criada com sucesso.');sqiPzTab('dashboard',document.querySelector('#sqiPersonalizadaModal .sqiPzNav button'));
+ };
+ window.sqiPzAddPlayer=function(id){
+   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
+   if(x.players.length>=x.slots){alert('Todas as vagas estão ocupadas. Use RESERVA.');return}
+   const name=prompt('Nome do jogador:');if(!name)return;
+   const nick=prompt('Nick:')||'',team=prompt('Trio / equipe:')||'';
+   x.players.push({id:uid('PL'),name,nick,team,present:false,score:0,kills:0,position:'',registeredAt:new Date().toISOString()});
+   save(a);renderRegistrations();
+ };
+ window.sqiPzReserve=function(id){
+   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
+   const name=prompt('Nome para reserva:');if(!name)return;
+   x.reservas.push({id:uid('R'),name,nick:prompt('Nick:')||'',createdAt:new Date().toISOString()});
+   save(a);alert('Jogador adicionado à reserva.');renderRegistrations();
+ };
+ window.sqiPzPresence=function(id){
+   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
+   if(!x.players.length){alert('Não há jogadores inscritos.');return}
+   x.players.forEach(p=>{const v=confirm('Presente: '+p.name+' ('+(p.nick||'sem nick')+')?');p.present=v});
+   save(a);alert('Presença salva.');
+ };
+ window.sqiPzStart=function(id){
+   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
+   x.status='EM ANDAMENTO';x.startedAt=new Date().toISOString();x.startedDisplay=new Date().toLocaleString('pt-BR');save(a);alert('Partida iniciada.');renderRoom();
+ };
+ window.sqiPzScores=function(id){
+   const a=data(),x=a.find(v=>v.id===id);if(!x)return;
+   if(!x.players.length){alert('Cadastre os jogadores primeiro.');return}
+   x.players.forEach((p,i)=>{const k=prompt('Kills de '+p.name+':',String(p.kills||0));p.kills=Number(k)||0;const sc=prompt('Pontuação total de '+p.name+':',String(p.score||0));p.score=Number(sc)||0;const pos=prompt('Colocação de '+p.name+':',String(p.position||i+1));p.position=Number(pos)||i+1});
+   x.players.sort((a,b)=>(a.position||999)-(b.position||999));x.players.forEach((p,i)=>p.position=i+1);
+   x.status='FINALIZADA';x.finishedAt=new Date().toISOString();x.finishedDisplay=new Date().toLocaleString('pt-BR');save(a);alert('Resultado salvo e classificação atualizada.');renderResults();
+ };
+ window.sqiPzSelect=function(id){
+   const x=data().find(v=>v.id===id);if(!x)return;
+   alert('PERSONALIZADA: '+x.title+'\nFormato: '+x.format+'\nJogadores: '+x.players.length+'/'+x.slots+'\nStatus: '+x.status+'\nSala: '+(x.room||'—')+'\nSenha: '+(x.password||'—')+'\nData: '+(x.dateDisplay||'—'));
+ };
+ window.sqiPzPDF=function(id){
+   const x=data().find(v=>v.id===id);if(!x)return;
+   const w=window.open('','_blank');if(!w){alert('Permita pop-ups para gerar o PDF.');return}
+   const rows=x.players.slice().sort((a,b)=>(a.position||999)-(b.position||999)).map((p,i)=>'<tr><td>'+(p.position||i+1)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.nick||'')+'</td><td>'+esc(p.team||'')+'</td><td>'+(p.kills||0)+'</td><td>'+(p.score||0)+'</td><td>'+(p.present?'SIM':'NÃO')+'</td></tr>').join('');
+   w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(x.title)+'</title><style>body{font-family:Arial;padding:28px;color:#111}h1{margin-bottom:5px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #aaa;padding:7px;text-align:left;font-size:12px}.meta{line-height:1.7}</style></head><body><h1>'+esc(x.title)+'</h1><div class="meta"><b>Formato:</b> '+esc(x.format)+'<br><b>Data:</b> '+esc(x.dateDisplay)+'<br><b>Organizador:</b> '+esc(x.organizer)+'<br><b>Mapa/Modo:</b> '+esc(x.map)+'<br><b>Sala:</b> '+esc(x.room)+'<br><b>Status:</b> '+esc(x.status)+'</div><table><thead><tr><th>Pos.</th><th>Jogador</th><th>Nick</th><th>Equipe</th><th>Kills</th><th>Pontos</th><th>Presença</th></tr></thead><tbody>'+rows+'</tbody></table><p><b>Regras/Observações:</b> '+esc(x.rules||'')+'</p><script>window.onload=function(){window.print()}</script></body></html>');w.document.close();
+ };
+ // Add a non-invasive opener to existing text/buttons that already mention Personalizada.
+ function attach(){
+   const els=[...document.querySelectorAll('button,a')].filter(e=>/PERSONALIZADA/i.test((e.textContent||'').trim()));
+   els.forEach(e=>{if(e.dataset.sqiPzBound)return;e.dataset.sqiPzBound='1';e.addEventListener('click',function(ev){ev.preventDefault();sqiPzOpen()})});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach);else attach();
+})();
+</script>
+
 </body>
 </html>
