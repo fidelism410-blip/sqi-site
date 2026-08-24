@@ -946,64 +946,73 @@ body,main,section,article,aside,header,footer,nav,
 }
 </style>
 
-<style id="sqi-button-gold-motion-final">
-/* SQI — movimento dourado visível nos botões */
-:root{--sqi-gold:#c89a22;--sqi-gold-light:#f4d46a}
-button.btn, a.btn, button.nav-cta, button.small-btn, button.sqi-od-btn, button.admin-tab{
+<style id="sqi-real-gold-motion">
+/* Efeito simples e compatível: o brilho se move dentro do próprio botão. */
+button.btn.gold,
+button.gold,
+a.btn.gold,
+.btn.gold,
+.nav-cta,
+.sqi-od-btn.gold,
+.small-btn.gold,
+.ld-action.gold{
   position:relative !important;
   overflow:hidden !important;
   isolation:isolate !important;
-  transform:translateZ(0);
+  animation:sqiGoldPulse 2.6s ease-in-out infinite !important;
 }
-button.btn::before, a.btn::before, button.nav-cta::before, button.small-btn::before, button.sqi-od-btn::before, button.admin-tab::before{
-  content:"";
-  position:absolute;
-  inset:-120% -45%;
-  background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,0) 46%,rgba(244,212,106,.18) 49%,rgba(255,232,145,.95) 50%,rgba(244,212,106,.18) 51%,rgba(255,255,255,0) 54%,transparent 58%);
-  transform:translateX(-80%) rotate(8deg);
-  animation:sqiButtonSweep 2.8s ease-in-out infinite;
+button.btn.gold::before,
+button.gold::before,
+a.btn.gold::before,
+.btn.gold::before,
+.nav-cta::before,
+.sqi-od-btn.gold::before,
+.small-btn.gold::before,
+.ld-action.gold::before{
+  content:"" !important;
+  position:absolute !important;
+  z-index:10 !important;
   pointer-events:none !important;
-  z-index:0;
+  top:-100% !important;
+  bottom:-100% !important;
+  left:-45% !important;
+  width:24% !important;
+  transform:rotate(20deg) !important;
+  background:rgba(255,245,190,.95) !important;
+  box-shadow:0 0 18px 8px rgba(255,214,80,.45) !important;
+  animation:sqiGoldRay 2.8s ease-in-out infinite !important;
 }
-button.btn::after, a.btn::after, button.nav-cta::after, button.small-btn::after, button.sqi-od-btn::after, button.admin-tab::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  box-shadow:inset 0 0 0 1px rgba(244,212,106,.12),0 0 0 rgba(200,154,34,0);
-  animation:sqiButtonPulse 2.8s ease-in-out infinite;
+button.btn.gold::after,
+button.gold::after,
+a.btn.gold::after,
+.btn.gold::after,
+.nav-cta::after,
+.sqi-od-btn.gold::after,
+.small-btn.gold::after,
+.ld-action.gold::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:9 !important;
   pointer-events:none !important;
-  z-index:0;
+  border-radius:inherit !important;
+  box-shadow:inset 0 0 0 1px rgba(255,235,150,.75),0 0 12px rgba(200,154,34,.28) !important;
+  animation:sqiGoldBorder 2.6s ease-in-out infinite !important;
 }
-button.btn > *, a.btn > *, button.nav-cta > *, button.small-btn > *, button.sqi-od-btn > *, button.admin-tab > *{position:relative;z-index:1}
-button.btn, a.btn, button.nav-cta, button.small-btn, button.sqi-od-btn, button.admin-tab{
-  animation:sqiButtonFloat 2.8s ease-in-out infinite;
+@keyframes sqiGoldRay{
+  0%,35%{left:-45%;opacity:0}
+  45%{opacity:1}
+  70%,100%{left:145%;opacity:0}
 }
-button.btn:hover, a.btn:hover, button.nav-cta:hover, button.small-btn:hover, button.sqi-od-btn:hover, button.admin-tab:hover{
-  transform:translateY(-2px) scale(1.015) !important;
-  box-shadow:0 0 0 1px rgba(244,212,106,.35),0 0 22px rgba(200,154,34,.35) !important;
+@keyframes sqiGoldBorder{
+  0%,100%{opacity:.45}
+  50%{opacity:1}
 }
-@keyframes sqiButtonSweep{
-  0%,35%{transform:translateX(-85%) rotate(8deg);opacity:0}
-  42%{opacity:1}
-  72%{transform:translateX(85%) rotate(8deg);opacity:1}
-  82%,100%{transform:translateX(85%) rotate(8deg);opacity:0}
-}
-@keyframes sqiButtonPulse{
-  0%,100%{box-shadow:inset 0 0 0 1px rgba(244,212,106,.10),0 0 0 rgba(200,154,34,0)}
-  50%{box-shadow:inset 0 0 0 1px rgba(244,212,106,.38),0 0 14px rgba(200,154,34,.18)}
-}
-@keyframes sqiButtonFloat{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-1px)}
-}
-@media(prefers-reduced-motion:reduce){
- button.btn,a.btn,button.nav-cta,button.small-btn,button.sqi-od-btn,button.admin-tab,
- button.btn::before,a.btn::before,button.nav-cta::before,button.small-btn::before,button.sqi-od-btn::before,button.admin-tab::before,
- button.btn::after,a.btn::after,button.nav-cta::after,button.small-btn::after,button.sqi-od-btn::after,button.admin-tab::after{animation:none !important}
+@keyframes sqiGoldPulse{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.08)}
 }
 </style>
-
 </head>
 <body>
 <style id="sqi-dark-impact-loader">
@@ -2896,69 +2905,6 @@ document.addEventListener('click',function(ev){
   window.renderSqiAnalytics=function(a){if(old)old(a);render(a)};
 })();
 </script>
-
-<style id="SQI-GOLD-BUTTON-FORCE">
-/* FORCED SQI GOLD MOTION — visual only */
-.nav-cta, .btn, .small-btn, .sqi-od-btn, button, a.btn, a.nav-cta {
-  position: relative !important;
-  overflow: hidden !important;
-  isolation: isolate !important;
-  transform: translateZ(0) !important;
-  animation: sqiButtonFloat 2.8s ease-in-out infinite !important;
-  border-color: rgba(214,168,54,.65) !important;
-  box-shadow: 0 0 0 1px rgba(214,168,54,.10), 0 0 14px rgba(214,168,54,.08) !important;
-}
-.nav-cta::before, .btn::before, .small-btn::before, .sqi-od-btn::before, button::before, a.btn::before {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 20 !important;
-  pointer-events: none !important;
-  top: -80% !important;
-  bottom: -80% !important;
-  left: -70% !important;
-  width: 34% !important;
-  transform: skewX(-20deg) !important;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0) 20%, rgba(255,215,80,.45) 45%, #ffd95a 50%, rgba(255,215,80,.45) 55%, transparent 80%) !important;
-  filter: blur(.3px) !important;
-  animation: sqiGoldBeam 2.2s linear infinite !important;
-}
-.nav-cta::after, .btn::after, .small-btn::after, .sqi-od-btn::after, button::after, a.btn::after {
-  content: "" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 10 !important;
-  pointer-events: none !important;
-  border-radius: inherit !important;
-  box-shadow: inset 0 0 0 1px rgba(255,215,90,.18), inset 0 0 18px rgba(215,165,45,.08) !important;
-  animation: sqiGoldPulse 1.6s ease-in-out infinite !important;
-}
-.nav-cta:hover, .btn:hover, .small-btn:hover, .sqi-od-btn:hover, button:hover, a.btn:hover {
-  transform: translateY(-3px) scale(1.015) !important;
-  border-color: #f2c94c !important;
-  box-shadow: 0 0 0 1px rgba(242,201,76,.45), 0 0 28px rgba(214,168,54,.38) !important;
-}
-@keyframes sqiGoldBeam {
-  0% { left: -70%; opacity: 0; }
-  10% { opacity: 1; }
-  55% { opacity: 1; }
-  70% { left: 135%; opacity: 0; }
-  100% { left: 135%; opacity: 0; }
-}
-@keyframes sqiGoldPulse {
-  0%,100% { opacity: .35; }
-  50% { opacity: 1; }
-}
-@keyframes sqiButtonFloat {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .nav-cta, .btn, .small-btn, .sqi-od-btn, button, a.btn,
-  .nav-cta::before, .btn::before, .small-btn::before, .sqi-od-btn::before, button::before, a.btn::before,
-  .nav-cta::after, .btn::after, .small-btn::after, .sqi-od-btn::after, button::after, a.btn::after { animation: none !important; }
-}
-</style>
-
 </body>
 </html>
 <script>document.addEventListener('DOMContentLoaded',()=>{try{renderPersonalizadasHome()}catch(e){console.warn('SQI Personalizadas Home',e)}});</script>
@@ -2982,52 +2928,3 @@ document.addEventListener('click',function(ev){
   else bind();
 })();
 </script>
-
-<style id="sqi-gold-animation-clean">
-/* ANIMAÇÃO SQI — brilho dourado real, sem depender de hover ou JS */
-.sqi-gold-animated{
-  position:relative !important;
-  overflow:hidden !important;
-  background-image:linear-gradient(
-    105deg,
-    #c89a22 0%,
-    #c89a22 38%,
-    #ffe89a 47%,
-    #fff3bf 50%,
-    #ffe89a 53%,
-    #c89a22 62%,
-    #c89a22 100%
-  ) !important;
-  background-size:260% 100% !important;
-  background-position:200% 0 !important;
-  animation:sqiGoldButtonSweep 2.4s linear infinite !important;
-  color:#000 !important;
-  border-color:#e1b84a !important;
-  box-shadow:0 0 0 1px rgba(225,184,74,.25),0 0 14px rgba(200,154,34,.25) !important;
-}
-.sqi-gold-animated::before,
-.sqi-gold-animated::after{
-  animation:none !important;
-}
-@keyframes sqiGoldButtonSweep{
-  from{background-position:200% 0}
-  to{background-position:-100% 0}
-}
-</style>
-<script id="sqi-gold-animation-clean-js">
-(function(){
-  function applyGold(){
-    document.querySelectorAll('button, a.btn, .btn, .nav-cta, .small-btn, .sqi-od-btn, .ld-action').forEach(function(el){
-      if(el.closest('#sqiDarkLoader') || el.closest('#sqiWelcomeScreen')) return;
-      el.classList.add('sqi-gold-animated');
-    });
-  }
-  applyGold();
-  document.addEventListener('DOMContentLoaded',applyGold);
-  setTimeout(applyGold,100);
-  setTimeout(applyGold,500);
-  setTimeout(applyGold,1500);
-  new MutationObserver(applyGold).observe(document.body,{childList:true,subtree:true});
-})();
-</script>
-
