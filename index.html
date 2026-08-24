@@ -1443,24 +1443,6 @@ function submitTeam(e){
 
 const SQI_PERSONAL_KEY='sqi_personalizadas';
 function getPersonalizadas(){try{const v=JSON.parse(localStorage.getItem(SQI_PERSONAL_KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-async function loadPersonalizadasCloud(){
-  try{
-    if(typeof window.sqiCloudGet==='function'){
-      let v=await window.sqiCloudGet(SQI_PERSONAL_KEY);
-      if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){}}
-      if(Array.isArray(v)){localStorage.setItem(SQI_PERSONAL_KEY,JSON.stringify(v));return v;}
-    }
-  }catch(e){console.warn('Personalizadas sync',e)}
-  return getPersonalizadas();
-}
-async function savePersonalizadasCloud(v){
-  localStorage.setItem(SQI_PERSONAL_KEY,JSON.stringify(v));
-  if(typeof window.sqiCloudSet==='function'){
-    const ok=await window.sqiCloudSet(SQI_PERSONAL_KEY,JSON.stringify(v));
-    if(ok===false)throw new Error('Banco não confirmou o cadastro.');
-  }
-  renderPersonalizadasHome();
-}
 function savePersonalizadas(v){localStorage.setItem(SQI_PERSONAL_KEY,JSON.stringify(v));renderPersonalizadasHome();}
 function escPersonal(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function formatPersonalDate(date){if(!date)return 'DATA NÃO DEFINIDA';const [y,m,d]=String(date).split('-');return d&&m&&y?`${d}/${m}/${y}`:date}
@@ -1578,12 +1560,10 @@ function renderAdminPersonalRegistrations(){
 }
 function approvePersonalRegistration(id){const rows=getPersonalRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.status='APROVADA';x.approvedAt=new Date().toISOString();savePersonalRegistrations(rows);renderAdminPersonalRegistrations()}
 function rejectPersonalRegistration(id){const rows=getPersonalRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.status='RECUSADA';x.rejectedAt=new Date().toISOString();savePersonalRegistrations(rows);renderAdminPersonalRegistrations()}
-async function createPersonalizada(){
-const title=(document.getElementById('personalTitle')?.value||'').trim(),format=document.getElementById('personalFormat')?.value||'TRIO',drops=Number(document.getElementById('personalDrops')?.value||0),date=document.getElementById('personalDate')?.value||'',time=document.getElementById('personalTime')?.value||'',statusLabel=document.getElementById('personalStatus')?.value||'PROGRAMADA',rules=(document.getElementById('personalRules')?.value||'').trim(),notes=(document.getElementById('personalNotes')?.value||'').trim(),msg=document.getElementById('personalCreateMsg');
-if(!title||!date||!time||drops<1){msg.textContent='Preencha nome, data, horário e quantidade de quedas.';return}
-try{const rows=await loadPersonalizadasCloud();rows.push({id:Date.now(),title,format,drops,date,time,statusLabel,rules,notes,active:true,createdAt:new Date().toISOString()});await savePersonalizadasCloud(rows);msg.textContent='✓ Personalizada publicada para todos.';renderAdminPersonalizadas()}catch(e){msg.textContent='Erro ao publicar: '+e.message}}
-async function togglePersonalizada(id){const rows=await loadPersonalizadasCloud();const x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.active=x.active===false;await savePersonalizadasCloud(rows);renderAdminPersonalizadas()}
-async function deletePersonalizada(id){if(!confirm('Excluir esta personalizada?'))return;const rows=await loadPersonalizadasCloud();await savePersonalizadasCloud(rows.filter(v=>String(v.id)!==String(id)));renderAdminPersonalizadas()}
+function createPersonalizada(){const title=(document.getElementById('personalTitle')?.value||'').trim(),format=document.getElementById('personalFormat')?.value||'TRIO',drops=Number(document.getElementById('personalDrops')?.value||0),date=document.getElementById('personalDate')?.value||'',time=document.getElementById('personalTime')?.value||'',statusLabel=document.getElementById('personalStatus')?.value||'PROGRAMADA',rules=(document.getElementById('personalRules')?.value||'').trim(),notes=(document.getElementById('personalNotes')?.value||'').trim(),msg=document.getElementById('personalCreateMsg');if(!title||!date||!time||drops<1){msg.textContent='Preencha nome, data, horário e quantidade de quedas.';return}const rows=getPersonalizadas();rows.push({id:Date.now(),title,format,drops,date,time,statusLabel,rules,notes,active:true,createdAt:new Date().toISOString()});savePersonalizadas(rows);msg.textContent='✓ Personalizada criada e publicada na Home.';renderAdminPersonalizadas()}
+function togglePersonalizada(id){const rows=getPersonalizadas();const x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.active=x.active===false;savePersonalizadas(rows);renderAdminPersonalizadas()}
+function deletePersonalizada(id){if(!confirm('Excluir esta personalizada?'))return;savePersonalizadas(getPersonalizadas().filter(v=>String(v.id)!==String(id)));renderAdminPersonalizadas()}
+
 function showAdminTab(tab,btn){
  document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
  ['dashboard','requests','teams','results','personalizadas','scoring','recruitment','sqiRanking','intelligence','trainers'].forEach(x=>{const el=document.getElementById('admin'+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.style.display=x===tab?'block':'none'});
@@ -2618,7 +2598,7 @@ function renderAcademyProgress(){let done=0;SQI_LESSONS.forEach((_,i)=>{if(local
   const SHARED=new Set([
     'sqi_team_requests','sqi_approved_teams','sqi_match_results',
     'sqi_internal_teams','sqi_internal_rules','sqi_internal_results',
-    'sqi_score_rules','sqi_site_stats','sqi_general_ranking','sqi_intelligence'
+    'sqi_score_rules','sqi_site_stats','sqi_general_ranking','sqi_intelligence','sqi_personalizadas'
   ]);
   const native={get:Storage.prototype.getItem,set:Storage.prototype.setItem,remove:Storage.prototype.removeItem};
   const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
@@ -2948,12 +2928,23 @@ document.addEventListener('click',function(ev){
   else bind();
 })();
 </script>
-<script id="sqi-personal-public-sync">
+
+<script id="sqi-personal-real-sync">
 (function(){
- async function sync(){
-  try{await loadPersonalizadasCloud();await renderPersonalizadasHome()}catch(e){}
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(sync,800));else setTimeout(sync,800);
- setInterval(sync,15000);
+  async function refresh(){
+    try{
+      if(typeof window.sqiCloudGet==='function'){
+        let v=await window.sqiCloudGet('sqi_personalizadas');
+        if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){}}
+        if(Array.isArray(v)){
+          localStorage.setItem('sqi_personalizadas',JSON.stringify(v));
+          if(typeof window.renderPersonalizadasHome==='function') await window.renderPersonalizadasHome();
+        }
+      }
+    }catch(e){console.warn('SQI Personalizadas sync:',e)}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(refresh,1200));
+  else setTimeout(refresh,1200);
+  setInterval(refresh,10000);
 })();
 </script>
