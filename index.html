@@ -432,6 +432,20 @@ button{font:inherit}
 .sqi-welcome-text{font-size:11px;color:#8b8b8b;letter-spacing:.6px}
 .sqi-welcome-line{height:1px;width:min(260px,60vw);background:#c89a22;margin:22px auto 0;box-shadow:0 0 14px rgba(200,154,34,.45)}</style>
 
+<style id="sqi-scrim-system-ui">
+.sqi-scrim-card{border:1px solid rgba(201,162,39,.32);background:#0b0b0b;border-radius:14px;padding:18px;color:#fff}
+.sqi-scrim-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sqi-scrim-pill{display:inline-flex;padding:5px 8px;border:1px solid #3a321d;border-radius:999px;font-size:8px;font-weight:900;letter-spacing:.5px}
+.sqi-scrim-price{font-size:24px;font-weight:950;color:#f0c75e}
+.sqi-scrim-pix{background:#111;border:1px solid #3a321d;border-radius:9px;padding:12px;word-break:break-all;font-size:10px;color:#eee}
+.sqi-scrim-modal-card{width:min(760px,100%)}
+.sqi-scrim-form{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.sqi-scrim-form .full{grid-column:1/-1}
+.sqi-scrim-form input,.sqi-scrim-form select,.sqi-scrim-form textarea{width:100%;box-sizing:border-box}
+.sqi-scrim-form textarea{min-height:72px}
+.sqi-scrim-admin-list{display:grid;gap:10px}
+@media(max-width:700px){.sqi-scrim-grid,.sqi-scrim-form{grid-template-columns:1fr}.sqi-scrim-form .full{grid-column:auto}}
+</style>
 <style id="sqi-personal-registration-ui">
 .sqi-personal-register-btn{padding:10px 18px;font-size:11px;font-weight:900}
 .sqi-personal-modal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px}
@@ -1127,6 +1141,16 @@ a.btn.gold::after,
   <div class="sqi-personal-list" id="personalHomeList"></div>
  </div>
 </section>
+
+<section class="section" id="scrims-home">
+ <div class="sqi-personal-wrap">
+  <div class="sqi-personal-head">
+   <div><div class="sqi-personal-kicker">SÉRIES QUALIFIED · COMPETIÇÃO</div><div class="sqi-personal-title">SCRIMS</div><div class="sqi-personal-sub">Entre nas próximas scrims da SQI, confira o valor, pagamento via Pix e faça sua inscrição completa.</div></div>
+   <div class="sqi-personal-status" id="scrimHomeStatus">NENHUMA SCRIM</div>
+  </div>
+  <div class="sqi-personal-list" id="scrimHomeList"></div>
+ </div>
+</section>
 <div class="stats">
  <div class="stat-grid">
   <div class="stat"><strong>100%</strong><span>PONTUAÇÃO AUTOMÁTICA</span></div>
@@ -1312,6 +1336,20 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='
 .personal-form-grid input,.personal-form-grid select,.personal-form-grid textarea{width:100%;padding:11px;border:1px solid #ddd6c8;border-radius:7px;background:#fff;font-size:12px;box-sizing:border-box}
 .personal-form-grid textarea{min-height:90px;resize:vertical}
 @media(max-width:600px){.personal-form-grid{grid-template-columns:1fr}.personal-form-grid .full{grid-column:auto}.sqi-personal-head{display:block}.sqi-personal-status{display:block;margin-top:8px}.sqi-personal-title{font-size:25px}}
+
+.admin-reg-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) 180px 150px;gap:8px;margin-bottom:12px}
+.admin-reg-table-wrap{overflow:auto;border:1px solid #e9e3d7;border-radius:9px;background:#fff}
+.admin-reg-table{width:100%;border-collapse:collapse;min-width:820px;font-size:11px}
+.admin-reg-table th,.admin-reg-table td{padding:10px 9px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+.admin-reg-table th{font-size:8px;letter-spacing:1px;color:#777;background:#faf9f4;position:sticky;top:0;z-index:1}
+.admin-reg-row:hover{background:#fcfbf7}
+.admin-reg-status{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:950;letter-spacing:.4px;background:#eee}
+.admin-reg-status.pending{background:#fff3cf;color:#8b6510}.admin-reg-status.approved{background:#dff4e5;color:#176b35}.admin-reg-status.rejected{background:#f8dfdf;color:#8b2727}
+.admin-record-count{font-size:10px;color:#777;margin-top:5px}.admin-record-empty{padding:24px;text-align:center;color:#777;font-size:11px}
+.admin-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.admin-detail-box{background:#faf9f4;border:1px solid #e8e0d1;border-radius:8px;padding:10px}.admin-detail-box b{display:block;font-size:8px;letter-spacing:1px;color:#777;margin-bottom:5px}.admin-detail-box span{font-size:11px;white-space:pre-wrap;word-break:break-word}
+.admin-section-nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.admin-section-nav .admin-tab{margin:0}
+@media(max-width:700px){.admin-reg-toolbar{grid-template-columns:1fr}.admin-detail-grid{grid-template-columns:1fr}}
+
 @media(max-width:600px){.app-grid{grid-template-columns:1fr}.app-field.full{grid-column:auto}.stat-admin{grid-template-columns:1fr 1fr}.nav-inner>div:last-child{display:flex;gap:5px}.nav-cta{padding:8px 9px;font-size:8px}}
 </style>
 
@@ -1342,10 +1380,18 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='
   <div class="admin-top"><b>SQI · PAINEL ADM</b><span>ACESSO RESTRITO · NIGHTMARX · ADMIN ONLY</span><button class="app-close" onclick="closeAdmin()" style="background:#fff">×</button></div>
   <div class="admin-body">
    <div class="admin-tabs">
-    <button class="admin-tab active" onclick="showAdminTab('dashboard',this)">DASHBOARD</button>
+    <button class="admin-tab active" onclick="showAdminTab('dashboard',this)">VISÃO GERAL</button>
+    <button class="admin-tab" onclick="showAdminTab('personalizadas',this)">PERSONALIZADAS</button>
+    <button class="admin-tab" onclick="showAdminTab('scrims',this)">SCRIMS</button>
+    <button class="admin-tab" onclick="showAdminTab('records',this)">BANCO DE REGISTROS</button>
     <button class="admin-tab" onclick="showAdminTab('requests',this)">CADASTROS</button>
     <button class="admin-tab" onclick="showAdminTab('teams',this)">EQUIPES</button>
-    <button class="admin-tab" onclick="showAdminTab('results',this)">RESULTADOS</button><button class="admin-tab" onclick="showAdminTab('personalizadas',this)">PERSONALIZADAS</button><button class="admin-tab" onclick="showAdminTab('scoring',this)">PONTUAÇÃO</button><button class="admin-tab" onclick="showAdminTab('recruitment',this)">RECRUTAMENTO</button><button class="admin-tab" onclick="showAdminTab('sqiRanking',this)">RANKING SQI</button><button class="admin-tab" onclick="showAdminTab('intelligence',this)">SQI INTELLIGENCE</button><button class="admin-tab" onclick="showAdminTab('trainers',this)">TREINADORES</button>
+    <button class="admin-tab" onclick="showAdminTab('recruitment',this)">RECRUTAMENTO</button>
+    <button class="admin-tab" onclick="showAdminTab('results',this)">RESULTADOS</button>
+    <button class="admin-tab" onclick="showAdminTab('scoring',this)">PONTUAÇÃO</button>
+    <button class="admin-tab" onclick="showAdminTab('sqiRanking',this)">RANKING SQI</button>
+    <button class="admin-tab" onclick="showAdminTab('intelligence',this)">INTELLIGENCE</button>
+    <button class="admin-tab" onclick="showAdminTab('trainers',this)">TREINADORES</button>
    </div>
    
 <div class="admin-card" id="sqiAnalyticsCard" style="margin-top:14px">
@@ -1380,7 +1426,7 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='
 
    <div id="adminRequests" style="display:none"></div><div id="adminTrainers" style="display:none"></div>
    <div id="adminTeams" style="display:none"></div>
-   <div id="adminResults" style="display:none"></div><div id="adminPersonalizadas" style="display:none"></div><div id="adminScoring" style="display:none"></div><div id="adminRecruitment" style="display:none"></div><div id="adminSqiRanking" style="display:none"></div><div id="adminIntelligence" style="display:none"></div>
+   <div id="adminResults" style="display:none"></div><div id="adminPersonalizadas" style="display:none"></div><div id="adminScrims" style="display:none"></div><div id="adminRecords" style="display:none"></div><div id="adminScoring" style="display:none"></div><div id="adminRecruitment" style="display:none"></div><div id="adminSqiRanking" style="display:none"></div><div id="adminIntelligence" style="display:none"></div>
   </div>
  </div>
 </div>
@@ -1456,7 +1502,7 @@ function renderPersonalizadasHome(){
 }
 function renderAdminPersonalizadas(){
  const el=document.getElementById('adminPersonalizadas');if(!el)return;const rows=getPersonalizadas().sort((a,b)=>new Date((a.date||'9999-12-31')+'T'+(a.time||'23:59'))-new Date((b.date||'9999-12-31')+'T'+(b.time||'23:59')));
- el.innerHTML=`<div class="admin-card"><h3>🎮 CRIAR PERSONALIZADA</h3><p class="score-note">Crie a personalizada aqui. Depois de salvar, ela aparece automaticamente na Home do site.</p><div class="personal-form-grid"><div><label>NOME DA PERSONALIZADA</label><input id="personalTitle" placeholder="Ex.: PERSONALIZADA SQI · SEXTA"></div><div><label>FORMATO</label><select id="personalFormat"><option value="TRIO">TRIO</option><option value="QUARTETO">QUARTETO</option></select></div><div><label>QUANTAS QUEDAS</label><input id="personalDrops" type="number" min="1" step="1" placeholder="Ex.: 4"></div><div><label>DATA</label><input id="personalDate" type="date"></div><div><label>HORA</label><input id="personalTime" type="time"></div><div><label>STATUS</label><select id="personalStatus"><option value="PROGRAMADA">PROGRAMADA</option><option value="INSCRIÇÕES ABERTAS">INSCRIÇÕES ABERTAS</option><option value="EM BREVE">EM BREVE</option></select></div><div class="full"><label>REGRAS</label><textarea id="personalRules" placeholder="Ex.: Respeitar host, sem exploits, pontuação por colocação e kills..."></textarea></div><div class="full"><label>OBSERVAÇÕES / INFORMAÇÕES EXTRAS</label><textarea id="personalNotes" placeholder="Ex.: Sala abre 15 minutos antes. Código será enviado no grupo."></textarea></div></div><div class="admin-actions" style="margin-top:10px"><button class="small-btn gold" onclick="createPersonalizada()">CRIAR PERSONALIZADA</button></div><div id="personalCreateMsg" class="score-note" style="margin-top:8px"></div></div><div class="admin-card"><h3>📅 PERSONALIZADAS PROGRAMADAS</h3><div id="adminPersonalList"></div></div><div class="admin-card" style="margin-top:12px"><h3>📝 INSCRIÇÕES NAS PERSONALIZADAS</h3><p class="score-note">Receba aviso neste celular quando uma nova inscrição entrar. Cada ADM deve ativar no próprio aparelho.</p><div class="admin-actions" style="margin:8px 0"><button class="small-btn gold" type="button" onclick="enablePersonalAdminNotifications()">🔔 ATIVAR NOTIFICAÇÕES</button><span id="personalAdminNotifyMsg" class="score-note"></span></div><div id="adminPersonalRegistrations"></div></div>`;
+ el.innerHTML=`<div class="admin-card"><h3>🎮 CRIAR PERSONALIZADA</h3><p class="score-note">Crie a personalizada aqui. Depois de salvar, ela aparece automaticamente na Home do site.</p><div class="personal-form-grid"><div><label>NOME DA PERSONALIZADA</label><input id="personalTitle" placeholder="Ex.: PERSONALIZADA SQI · SEXTA"></div><div><label>FORMATO</label><select id="personalFormat"><option value="TRIO">TRIO</option><option value="QUARTETO">QUARTETO</option></select></div><div><label>QUANTAS QUEDAS</label><input id="personalDrops" type="number" min="1" step="1" placeholder="Ex.: 4"></div><div><label>DATA</label><input id="personalDate" type="date"></div><div><label>HORA</label><input id="personalTime" type="time"></div><div><label>STATUS</label><select id="personalStatus"><option value="PROGRAMADA">PROGRAMADA</option><option value="INSCRIÇÕES ABERTAS">INSCRIÇÕES ABERTAS</option><option value="EM BREVE">EM BREVE</option></select></div><div class="full"><label>REGRAS</label><textarea id="personalRules" placeholder="Ex.: Respeitar host, sem exploits, pontuação por colocação e kills..."></textarea></div><div class="full"><label>OBSERVAÇÕES / INFORMAÇÕES EXTRAS</label><textarea id="personalNotes" placeholder="Ex.: Sala abre 15 minutos antes. Código será enviado no grupo."></textarea></div></div><div class="admin-actions" style="margin-top:10px"><button class="small-btn gold" onclick="createPersonalizada()">CRIAR PERSONALIZADA</button></div><div id="personalCreateMsg" class="score-note" style="margin-top:8px"></div></div><div class="admin-card"><h3>📅 PERSONALIZADAS PROGRAMADAS</h3><div id="adminPersonalList"></div></div><div class="admin-card" style="margin-top:12px"><h3>📝 INSCRIÇÕES NAS PERSONALIZADAS</h3><div id="adminPersonalRegistrations"></div></div>`;
  renderAdminPersonalList();
 }
 function renderAdminPersonalList(){const el=document.getElementById('adminPersonalList');if(!el)return;const rows=getPersonalizadas();if(!rows.length){el.innerHTML='<div class="score-note">Nenhuma personalizada cadastrada.</div>';return}el.innerHTML=rows.map(x=>`<div class="admin-card" style="margin-top:9px"><b>${escPersonal(x.title)}</b><div class="score-note">${escPersonal(formatPersonalDate(x.date))} · ${escPersonal(x.time||'—')} · ${escPersonal(x.format)} · ${escPersonal(x.drops)} quedas · ${escPersonal(x.statusLabel||'PROGRAMADA')}</div>${x.rules?`<div class="score-note" style="margin-top:5px;white-space:pre-line">${escPersonal(x.rules)}</div>`:''}<div class="admin-actions" style="margin-top:8px"><button class="small-btn" onclick="togglePersonalizada(${JSON.stringify(String(x.id))})">${x.active===false?'ATIVAR':'OCULTAR DA HOME'}</button><button class="small-btn red" onclick="deletePersonalizada(${JSON.stringify(String(x.id))})">EXCLUIR</button></div></div>`).join('')}
@@ -1570,79 +1616,124 @@ window.submitPersonalRegistration=async function(id){
   try{renderAdminPersonalRegistrations()}catch(e){}
 }
 async function renderAdminPersonalRegistrations(){
-  await loadPersonalRegistrationsCloud();
-  const el=document.getElementById('adminPersonalRegistrations'); if(!el)return;
-  const rows=getPersonalRegistrations().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  if(!rows.length){el.innerHTML='<div class="score-note">Nenhuma inscrição recebida.</div>';return}
-  el.innerHTML=rows.map(x=>`<div class="admin-card" style="margin-top:9px"><b>${escPersonal(x.team)}</b> ${x.tag?`<span class="score-note">[${escPersonal(x.tag)}]</span>`:''}<div class="score-note">${escPersonal(x.personalTitle)} · Capitão: ${escPersonal(x.captain)} · ${escPersonal(x.contact)}</div>${x.players?`<div class="score-note" style="white-space:pre-wrap">${escPersonal(x.players)}</div>`:''}<div class="admin-actions" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="score-note">STATUS: ${escPersonal(x.status)}</span>${x.status==='PENDENTE'?`<button class="small-btn gold" onclick="approvePersonalRegistration('${String(x.id).replace(/'/g, "\\'")}')">APROVAR</button><button class="small-btn red" onclick="rejectPersonalRegistration('${String(x.id).replace(/'/g, "\\'")}')">RECUSAR</button>`:''}<button class="small-btn" onclick="deletePersonalRegistration('${String(x.id).replace(/'/g, "\\'")}')">EXCLUIR</button></div></div>`).join('');
+  const el=document.getElementById('adminPersonalRegistrations');
+  if(!el)return;
+  try{await loadPersonalRegistrationsCloud();}catch(e){console.warn('SQI inscrições load',e)}
+  const rows=getPersonalRegistrations().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  if(!rows.length){el.innerHTML='<div class="admin-record-empty">Nenhuma inscrição recebida nas personalizadas.</div>';return}
+  const pending=rows.filter(x=>x.status==='PENDENTE').length;
+  el.innerHTML=`<div class="admin-reg-toolbar"><input id="personalRegSearch" class="sqi-rank-input" placeholder="Buscar equipe, capitão, contato ou personalizada..." oninput="filterAdminPersonalRegistrations()"><select id="personalRegStatusFilter" class="sqi-rank-input" onchange="filterAdminPersonalRegistrations()"><option value="TODOS">TODOS OS STATUS</option><option value="PENDENTE">PENDENTES</option><option value="APROVADA">APROVADAS</option><option value="RECUSADA">RECUSADAS</option></select><button type="button" class="small-btn gold" onclick="refreshAdminPersonalRegistrations()">ATUALIZAR</button></div><div class="admin-record-count">${rows.length} registro(s) · ${pending} pendente(s)</div><div id="adminPersonalRegTable" style="margin-top:10px"></div>`;
+  window.__adminPersonalRows=rows;
+  filterAdminPersonalRegistrations();
 }
-async function updatePersonalRegistrationStatus(id,status){
-  const rows=await loadPersonalRegistrationsCloud();
-  const x=rows.find(v=>String(v.id)===String(id));
-  if(!x){alert('Inscrição não encontrada no banco central.');return;}
-  x.status=status;
-  if(status==='APROVADA')x.approvedAt=new Date().toISOString();
-  if(status==='RECUSADA')x.rejectedAt=new Date().toISOString();
-  try{await savePersonalRegistrationsCloud(rows);await renderAdminPersonalRegistrations();showPersonalAdminToast(status==='APROVADA'?'INSCRIÇÃO APROVADA COM SUCESSO':'INSCRIÇÃO RECUSADA COM SUCESSO');}
-  catch(e){alert('Não foi possível salvar no banco central: '+e.message);}
+function filterAdminPersonalRegistrations(){
+  const el=document.getElementById('adminPersonalRegTable');if(!el)return;
+  const rows=window.__adminPersonalRows||[];
+  const q=(document.getElementById('personalRegSearch')?.value||'').toLowerCase().trim();
+  const st=document.getElementById('personalRegStatusFilter')?.value||'TODOS';
+  const filtered=rows.filter(x=>{
+    const hay=[x.team,x.tag,x.captain,x.contact,x.players,x.personalTitle].join(' ').toLowerCase();
+    return (!q||hay.includes(q))&&(st==='TODOS'||x.status===st);
+  });
+  if(!filtered.length){el.innerHTML='<div class="admin-record-empty">Nenhum registro encontrado com esses filtros.</div>';return}
+  el.innerHTML='<div class="admin-reg-table-wrap"><table class="admin-reg-table"><thead><tr><th>DATA</th><th>PERSONALIZADA</th><th>EQUIPE</th><th>CAPITÃO / CONTATO</th><th>JOGADORES</th><th>STATUS</th><th>AÇÕES</th></tr></thead><tbody>'+filtered.map(x=>{
+    const cls=x.status==='APROVADA'?'approved':x.status==='RECUSADA'?'rejected':'pending';
+    return `<tr class="admin-reg-row"><td>${escPersonal(formatPersonalDateTime(x.createdAt))}</td><td><b>${escPersonal(x.personalTitle||'—')}</b></td><td><b>${escPersonal(x.team||'—')}</b>${x.tag?`<br><span class="score-note">[${escPersonal(x.tag)}]</span>`:''}</td><td>${escPersonal(x.captain||'—')}<br><span class="score-note">${escPersonal(x.contact||'—')}</span></td><td>${escPersonal(x.players||'—')}</td><td><span class="admin-reg-status ${cls}">${escPersonal(x.status||'PENDENTE')}</span></td><td><div class="admin-actions"><button type="button" class="small-btn" data-view-personal="${escPersonal(String(x.id))}">VER TUDO</button>${x.status==='PENDENTE'?`<button type="button" class="small-btn gold" onclick="approvePersonalRegistration(${JSON.stringify(String(x.id))})">APROVAR</button><button type="button" class="small-btn red" onclick="rejectPersonalRegistration(${JSON.stringify(String(x.id))})">RECUSAR</button>`:''}<button type="button" class="small-btn red" onclick="deletePersonalRegistration(${JSON.stringify(String(x.id))})">EXCLUIR</button></div></td></tr>`;
+  }).join('')+'</tbody></table></div>';
+  bindPersonalRegistrationViewButtons();
 }
-function approvePersonalRegistration(id){return updatePersonalRegistrationStatus(id,'APROVADA')}
-function rejectPersonalRegistration(id){return updatePersonalRegistrationStatus(id,'RECUSADA')}
-async function deletePersonalRegistration(id){
-  if(!confirm('Excluir esta inscrição permanentemente?'))return;
-  const rows=await loadPersonalRegistrationsCloud();
-  const next=rows.filter(v=>String(v.id)!==String(id));
-  if(next.length===rows.length){alert('Inscrição não encontrada.');return;}
-  try{await savePersonalRegistrationsCloud(next);await renderAdminPersonalRegistrations();showPersonalAdminToast('INSCRIÇÃO EXCLUÍDA COM SUCESSO');}
-  catch(e){alert('Não foi possível excluir no banco central: '+e.message);}
+function bindPersonalRegistrationViewButtons(){
+  document.querySelectorAll('[data-view-personal]').forEach(function(btn){
+    if(btn.dataset.bound==='1') return;
+    btn.dataset.bound='1';
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      const id=this.getAttribute('data-view-personal');
+      try{ window.viewPersonalRegistration(id); }catch(err){ console.error('VER TUDO',err); alert('Não foi possível abrir o registro: '+(err?.message||err)); }
+    });
+  });
 }
-function showPersonalAdminToast(text){
-  let t=document.getElementById('sqiPersonalAdminToast');
-  if(!t){t=document.createElement('div');t.id='sqiPersonalAdminToast';t.style.cssText='position:fixed;right:18px;bottom:22px;z-index:99999;background:#c89b22;color:#050505;padding:13px 17px;border-radius:10px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.4);';document.body.appendChild(t);}
-  t.textContent='✓ '+text;t.style.display='block';clearTimeout(t._timer);t._timer=setTimeout(()=>t.style.display='none',3000);
+function formatPersonalDateTime(v){if(!v)return '—';try{return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}catch(e){return v}}
+async function refreshAdminPersonalRegistrations(){await renderAdminPersonalRegistrations()}
+function findPersonalRegistration(id){
+  const rows=(window.__adminPersonalRows&&Array.isArray(window.__adminPersonalRows))?window.__adminPersonalRows:getPersonalRegistrations();
+  return rows.find(v=>String(v.id)===String(id));
 }
-let sqiPersonalNotifyTimer=null;
-let sqiPersonalNotifyKnown=new Set();
-async function enablePersonalAdminNotifications(){
-  const msg=document.getElementById('personalAdminNotifyMsg');
-  try{
-    if(!('Notification' in window))throw new Error('Este navegador não suporta notificações.');
-    const p=await Notification.requestPermission();
-    if(msg)msg.textContent=p==='granted'?'✓ Notificações ativadas neste celular.':'Permissão não concedida.';
-    if(p==='granted'){
-      const rows=await loadPersonalRegistrationsCloud();
-      rows.forEach(x=>sqiPersonalNotifyKnown.add(String(x.id)));
-      checkPersonalAdminNotifications(true);
-    }
-  }catch(e){if(msg)msg.textContent=e.message;}
+window.viewPersonalRegistration=async function(id){
+  console.log('[SQI] Abrindo registro', id);
+  let x=findPersonalRegistration(id);
+  if(!x){
+    try{const rows=await loadPersonalRegistrationsCloud();x=(Array.isArray(rows)?rows:[]).find(v=>String(v.id)===String(id));}catch(e){}
+  }
+  if(!x){alert("Registro não encontrado. Clique em ATUALIZAR no Banco de Registros e tente novamente.");return;}
+  const old=document.getElementById('sqiPersonalRecordModal');if(old)old.remove();
+  const modal=document.createElement('div');modal.id='sqiPersonalRecordModal';modal.className='sqi-personal-modal';
+  const backdrop=document.createElement('div');backdrop.className='sqi-personal-modal-backdrop';backdrop.onclick=()=>modal.remove();
+  const card=document.createElement('div');card.className='sqi-personal-modal-card';
+  card.innerHTML=`<button type="button" class="sqi-personal-modal-close">×</button><div class="sqi-personal-kicker">SÉRIES QUALIFIED · BANCO DE REGISTROS</div><h2>${escPersonal(x.team||'INSCRIÇÃO')}</h2><div class="sqi-personal-modal-meta">${escPersonal(x.personalTitle||'PERSONALIZADA')} · ${escPersonal(x.status||'PENDENTE')}</div><div class="admin-detail-grid"><div class="admin-detail-box"><b>DATA DO REGISTRO</b><span>${escPersonal(formatPersonalDateTime(x.createdAt))}</span></div><div class="admin-detail-box"><b>STATUS</b><span>${escPersonal(x.status||'PENDENTE')}</span></div><div class="admin-detail-box"><b>TAG</b><span>${escPersonal(x.tag||'—')}</span></div><div class="admin-detail-box"><b>CAPITÃO</b><span>${escPersonal(x.captain||'—')}</span></div><div class="admin-detail-box"><b>CONTATO</b><span>${escPersonal(x.contact||'—')}</span></div><div class="admin-detail-box"><b>PERSONALIZADA</b><span>${escPersonal(x.personalTitle||'—')}</span></div><div class="admin-detail-box" style="grid-column:1/-1"><b>JOGADORES</b><span>${escPersonal(x.players||'—')}</span></div><div class="admin-detail-box" style="grid-column:1/-1"><b>APROVAÇÃO / RECUSA</b><span>${x.approvedAt?'Aprovada em '+escPersonal(formatPersonalDateTime(x.approvedAt)):x.rejectedAt?'Recusada em '+escPersonal(formatPersonalDateTime(x.rejectedAt)):'Ainda não processada.'}</span></div></div><div class="admin-actions" style="margin-top:14px"><button type="button" class="small-btn" id="closePersonalRecord">FECHAR</button>${x.status==='PENDENTE'?`<button type="button" class="small-btn gold" id="approvePersonalRecord">APROVAR</button><button type="button" class="small-btn red" id="rejectPersonalRecord">RECUSAR</button>`:''}<button type="button" class="small-btn red" id="deletePersonalRecord">EXCLUIR</button></div>`;
+  modal.append(backdrop,card);document.body.appendChild(modal);
+  card.querySelector('.sqi-personal-modal-close').onclick=()=>modal.remove();card.querySelector('#closePersonalRecord').onclick=()=>modal.remove();
+  card.querySelector('#approvePersonalRecord')?.addEventListener('click',()=>{approvePersonalRegistration(id);modal.remove()});
+  card.querySelector('#rejectPersonalRecord')?.addEventListener('click',()=>{rejectPersonalRegistration(id);modal.remove()});
+  card.querySelector('#deletePersonalRecord')?.addEventListener('click',()=>{deletePersonalRegistration(id);modal.remove()});
 }
-async function checkPersonalAdminNotifications(initial=false){
-  try{
-    const rows=await loadPersonalRegistrationsCloud();
-    const current=new Set(rows.map(x=>String(x.id)));
-    if(!initial && 'Notification' in window && Notification.permission==='granted'){
-      rows.filter(x=>!sqiPersonalNotifyKnown.has(String(x.id))).forEach(x=>{
-        new Notification('Nova inscrição — SQI',{body:(x.team||'Equipe')+' se inscreveu em '+(x.personalTitle||'Personalizada SQI')});
-        showPersonalAdminToast('NOVA INSCRIÇÃO: '+(x.team||'EQUIPE'));
-      });
-    }
-    sqiPersonalNotifyKnown=current;
-    if(document.getElementById('adminPersonalRegistrations'))await renderAdminPersonalRegistrations();
-  }catch(e){console.warn('SQI personal notifications',e)}
-}
-function startPersonalAdminNotifications(){
-  if(sqiPersonalNotifyTimer)clearInterval(sqiPersonalNotifyTimer);
-  setTimeout(()=>checkPersonalAdminNotifications(true),1500);
-  sqiPersonalNotifyTimer=setInterval(()=>checkPersonalAdminNotifications(false),7000);
-}
-startPersonalAdminNotifications();
+function approvePersonalRegistration(id){const rows=getPersonalRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.status='APROVADA';x.approvedAt=new Date().toISOString();delete x.rejectedAt;savePersonalRegistrations(rows);renderAdminPersonalRegistrations().catch(console.warn)}
+function rejectPersonalRegistration(id){const rows=getPersonalRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.status='RECUSADA';x.rejectedAt=new Date().toISOString();delete x.approvedAt;savePersonalRegistrations(rows);renderAdminPersonalRegistrations().catch(console.warn)}
+function deletePersonalRegistration(id){if(!confirm('Excluir este registro permanentemente?'))return;savePersonalRegistrations(getPersonalRegistrations().filter(v=>String(v.id)!==String(id)));renderAdminPersonalRegistrations().catch(console.warn)}
+
 function createPersonalizada(){const title=(document.getElementById('personalTitle')?.value||'').trim(),format=document.getElementById('personalFormat')?.value||'TRIO',drops=Number(document.getElementById('personalDrops')?.value||0),date=document.getElementById('personalDate')?.value||'',time=document.getElementById('personalTime')?.value||'',statusLabel=document.getElementById('personalStatus')?.value||'PROGRAMADA',rules=(document.getElementById('personalRules')?.value||'').trim(),notes=(document.getElementById('personalNotes')?.value||'').trim(),msg=document.getElementById('personalCreateMsg');if(!title||!date||!time||drops<1){msg.textContent='Preencha nome, data, horário e quantidade de quedas.';return}const rows=getPersonalizadas();rows.push({id:Date.now(),title,format,drops,date,time,statusLabel,rules,notes,active:true,createdAt:new Date().toISOString()});savePersonalizadas(rows);msg.textContent='✓ Personalizada criada e publicada na Home.';renderAdminPersonalizadas()}
 function togglePersonalizada(id){const rows=getPersonalizadas();const x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.active=x.active===false;savePersonalizadas(rows);renderAdminPersonalizadas()}
 function deletePersonalizada(id){if(!confirm('Excluir esta personalizada?'))return;savePersonalizadas(getPersonalizadas().filter(v=>String(v.id)!==String(id)));renderAdminPersonalizadas()}
 
+const SQI_SCRIM_KEY='sqi_scrims';
+const SQI_SCRIM_REG_KEY='sqi_scrim_registrations';
+function getScrims(){try{const v=JSON.parse(localStorage.getItem(SQI_SCRIM_KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
+function saveScrims(v){localStorage.setItem(SQI_SCRIM_KEY,JSON.stringify(v));renderScrimsHome();}
+function getScrimRegistrations(){try{const v=JSON.parse(localStorage.getItem(SQI_SCRIM_REG_KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
+function saveScrimRegistrations(v){localStorage.setItem(SQI_SCRIM_REG_KEY,JSON.stringify(v));}
+function copyScrimPix(code){if(!code)return;try{navigator.clipboard?.writeText(code).then(()=>alert('Código Pix copiado.')).catch(()=>{prompt('Copie o código Pix:',code)})}catch(e){prompt('Copie o código Pix:',code)}}
+function renderScrimsHome(){
+ const el=document.getElementById('scrimHomeList'),status=document.getElementById('scrimHomeStatus');if(!el)return;
+ const rows=getScrims().filter(x=>x.active!==false && x.status!=='ENCERRADA').sort((a,b)=>new Date((a.date||'9999-12-31')+'T'+(a.time||'23:59'))-new Date((b.date||'9999-12-31')+'T'+(b.time||'23:59')));
+ if(!rows.length){status.textContent='NENHUMA SCRIM';el.innerHTML='<div class="sqi-personal-empty"><b>NENHUMA SCRIM ABERTA</b><br><span style="display:inline-block;margin-top:6px">Aguarde a próxima competição da SQI.</span></div>';return}
+ status.textContent=rows.length===1?'PRÓXIMA SCRIM':rows.length+' SCRIMS PROGRAMADAS';
+ el.innerHTML=rows.map(x=>`<article class="sqi-scrim-card"><div class="sqi-personal-card-top"><div><div class="sqi-personal-date">${escPersonal(formatPersonalDate(x.date))} · ${escPersonal(x.time||'HORÁRIO A DEFINIR')}</div><h3 style="margin:5px 0">${escPersonal(x.title||'SCRIM SQI')}</h3></div><div class="sqi-personal-status">${escPersonal(x.status||'INSCRIÇÕES ABERTAS')}</div></div><div class="sqi-scrim-grid" style="margin-top:12px"><div><span class="sqi-scrim-pill">FORMATO · ${escPersonal(x.format||'TRIO')}</span></div><div><span class="sqi-scrim-pill">QUEDAS · ${escPersonal(x.drops||1)}</span></div><div><div class="score-note">INSCRIÇÃO</div><div class="sqi-scrim-price">R$ ${escPersonal(Number(x.price||0).toFixed(2).replace('.',','))}</div></div><div><div class="score-note">VAGAS</div><div style="font-size:20px;font-weight:900">${escPersonal(x.maxTeams||'—')}</div></div></div>${x.rules?`<div class="sqi-personal-rules" style="margin-top:12px">${escPersonal(x.rules)}</div>`:''}<div class="admin-actions" style="margin-top:13px"><button type="button" class="btn gold sqi-personal-register-btn" onclick="openScrimRegistration(${JSON.stringify(String(x.id))})">INSCREVER E PAGAR VIA PIX</button></div></article>`).join('');
+}
+function openScrimRegistration(id){
+ const event=getScrims().find(x=>String(x.id)===String(id));if(!event)return alert('Scrim não encontrada.');
+ const old=document.getElementById('sqiScrimRegisterModal');if(old)old.remove();document.body.style.overflow='hidden';
+ const modal=document.createElement('div');modal.id='sqiScrimRegisterModal';modal.className='sqi-personal-modal';
+ const backdrop=document.createElement('div');backdrop.className='sqi-personal-modal-backdrop';
+ const card=document.createElement('div');card.className='sqi-personal-modal-card sqi-scrim-modal-card';
+ card.innerHTML=`<button type="button" class="sqi-personal-modal-close">×</button><div class="sqi-personal-kicker">SÉRIES QUALIFIED · INSCRIÇÃO SCRIM</div><h2>${escPersonal(event.title)}</h2><div class="sqi-personal-modal-meta">${escPersonal(formatPersonalDate(event.date))} · ${escPersonal(event.time||'—')} · ${escPersonal(event.format||'TRIO')} · ${escPersonal(event.drops||1)} queda(s)</div><div class="sqi-scrim-form"><div><label>NOME DA EQUIPE *</label><input id="scrimTeam" required placeholder="Nome oficial da equipe"></div><div><label>TAG *</label><input id="scrimTag" required placeholder="TAG"></div><div><label>NOME DO CAPITÃO *</label><input id="scrimCaptain" required placeholder="Nome completo"></div><div><label>WHATSAPP *</label><input id="scrimContact" required placeholder="(DDD) 99999-9999"></div><div><label>DISCORD *</label><input id="scrimDiscord" placeholder="Usuário Discord"></div><div><label>PLATAFORMA *</label><select id="scrimPlatform"><option>PC</option><option>CONSOLE</option><option>CELULAR</option></select></div><div><label>CIDADE / ESTADO</label><input id="scrimLocation" placeholder="Ex.: Salto/SP"></div><div><label>UID / ID PRINCIPAL DO JOGO *</label><input id="scrimGameId" required placeholder="ID/UID"></div><div class="full"><label>JOGADORES E IDs *</label><textarea id="scrimPlayers" required placeholder="Ex.:\nJogador 1 — ID\nJogador 2 — ID\nJogador 3 — ID\nJogador 4 — ID (se houver)"></textarea></div><div class="full"><label>OBSERVAÇÕES</label><textarea id="scrimNotes" placeholder="Informações que a organização precisa saber."></textarea></div><div class="full"><label>PAGAMENTO PIX — R$ ${escPersonal(Number(event.price||0).toFixed(2).replace('.',','))}</label><div class="sqi-scrim-pix">${escPersonal(event.pixCode||'Código Pix ainda não configurado.')}</div><div class="admin-actions" style="margin-top:7px"><button type="button" class="small-btn gold" id="copyScrimPixBtn">COPIAR PIX</button></div></div><div class="full"><label>ID / E2E / COMPROVANTE DO PIX *</label><input id="scrimPaymentRef" required placeholder="Cole o E2E, TXID ou identificador da transferência"><div class="score-note">A inscrição ficará PENDENTE até a administração confirmar o pagamento.</div></div></div><div id="scrimRegMsg" class="score-note" style="margin-top:10px"></div><div class="app-actions" style="margin-top:14px"><button type="button" class="btn light" id="closeScrimModal">CANCELAR</button><button type="button" class="btn gold" id="submitScrimBtn">ENVIAR INSCRIÇÃO</button></div>`;
+ modal.append(backdrop,card);document.body.appendChild(modal);
+ const close=()=>{modal.remove();document.body.style.overflow=''};backdrop.onclick=close;card.querySelector('.sqi-personal-modal-close').onclick=close;card.querySelector('#closeScrimModal').onclick=close;card.querySelector('#copyScrimPixBtn').onclick=()=>copyScrimPix(event.pixCode||'');card.querySelector('#submitScrimBtn').onclick=()=>submitScrimRegistration(event.id);
+}
+async function submitScrimRegistration(id){
+ const event=getScrims().find(x=>String(x.id)===String(id));const msg=document.getElementById('scrimRegMsg');if(!event||!msg)return;
+ const g=id=>document.getElementById(id)?.value.trim()||'';const row={id:Date.now(),scrimId:String(event.id),scrimTitle:event.title,team:g('scrimTeam'),tag:g('scrimTag'),captain:g('scrimCaptain'),contact:g('scrimContact'),discord:g('scrimDiscord'),platform:g('scrimPlatform'),location:g('scrimLocation'),gameId:g('scrimGameId'),players:g('scrimPlayers'),notes:g('scrimNotes'),paymentRef:g('scrimPaymentRef'),paymentStatus:'PENDENTE',status:'PENDENTE',price:Number(event.price||0),createdAt:new Date().toISOString()};
+ const required=['team','tag','captain','contact','gameId','players','paymentRef'];if(required.some(k=>!row[k])){msg.textContent='Preencha todos os campos obrigatórios, incluindo o identificador do Pix.';return}
+ const rows=getScrimRegistrations();rows.push(row);saveScrimRegistrations(rows);msg.textContent='✓ Inscrição enviada. Aguarde a confirmação do pagamento pela SQI.';
+ const btn=document.getElementById('submitScrimBtn');if(btn)btn.disabled=true;renderAdminScrims();
+}
+function renderAdminScrims(){
+ const el=document.getElementById('adminScrims');if(!el)return;const scrims=getScrims();const regs=getScrimRegistrations();
+ el.innerHTML=`<div class="admin-card"><h3>🎮 CRIAR SCRIM</h3><p class="score-note">Configure a competição que aparecerá na Home, o valor da inscrição e o código Pix usado no pagamento.</p><div class="sqi-scrim-form"><div><label>NOME DA SCRIM *</label><input id="scrimTitleAdmin" placeholder="Ex.: SCRIM SQI · SEXTA"></div><div><label>FORMATO</label><select id="scrimFormatAdmin"><option>TRIO</option><option>QUARTETO</option><option>DUO</option><option>SOLO</option></select></div><div><label>QUEDAS</label><input id="scrimDropsAdmin" type="number" min="1" value="4"></div><div><label>VALOR (R$)</label><input id="scrimPriceAdmin" type="number" min="0" step="0.01" placeholder="15.00"></div><div><label>DATA</label><input id="scrimDateAdmin" type="date"></div><div><label>HORA</label><input id="scrimTimeAdmin" type="time"></div><div><label>VAGAS / LIMITE DE EQUIPES</label><input id="scrimMaxTeamsAdmin" type="number" min="1" placeholder="Ex.: 20"></div><div><label>STATUS</label><select id="scrimStatusAdmin"><option>INSCRIÇÕES ABERTAS</option><option>EM BREVE</option><option>ENCERRADA</option></select></div><div class="full"><label>CÓDIGO PIX — COPIA E COLA *</label><textarea id="scrimPixAdmin" placeholder="Cole aqui o código Pix copia e cola"></textarea></div><div class="full"><label>CHAVE / RECEBEDOR (INFORMATIVO)</label><input id="scrimPixNameAdmin" placeholder="Ex.: SQI / Nome do recebedor"></div><div class="full"><label>REGRAS</label><textarea id="scrimRulesAdmin" placeholder="Regras, horários, servidor, pontuação, conduta..."></textarea></div></div><button type="button" class="small-btn gold" style="margin-top:10px" onclick="createScrim()">PUBLICAR SCRIM</button><span id="scrimCreateMsg" class="score-note"></span></div><div class="admin-card"><h3>📅 SCRIMS PUBLICADAS</h3><div class="sqi-scrim-admin-list">${scrims.length?scrims.map(x=>`<div class="admin-card" style="margin:0"><b>${escPersonal(x.title)}</b><div class="score-note">${escPersonal(formatPersonalDate(x.date))} · ${escPersonal(x.time||'—')} · ${escPersonal(x.format)} · R$ ${escPersonal(Number(x.price||0).toFixed(2).replace('.',','))} · ${escPersonal(x.status||'—')}</div><div class="admin-actions" style="margin-top:8px"><button type="button" class="small-btn" onclick="toggleScrim(${JSON.stringify(String(x.id))})">${x.active===false?'ATIVAR':'OCULTAR'}</button><button type="button" class="small-btn red" onclick="deleteScrim(${JSON.stringify(String(x.id))})">EXCLUIR</button></div></div>`).join(''):'<div class="score-note">Nenhuma scrim cadastrada.</div>'}</div></div><div class="admin-card"><h3>💳 INSCRIÇÕES / PAGAMENTOS</h3><div id="adminScrimRegistrations"></div></div>`;
+ renderAdminScrimRegistrations();
+}
+function renderAdminScrimRegistrations(){const el=document.getElementById('adminScrimRegistrations');if(!el)return;const rows=getScrimRegistrations().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));if(!rows.length){el.innerHTML='<div class="admin-record-empty">Nenhuma inscrição de scrim recebida.</div>';return}el.innerHTML='<div class="admin-reg-toolbar"><input id="scrimRegSearch" class="sqi-rank-input" placeholder="Buscar equipe, capitão, contato, Discord ou scrim..." oninput="filterAdminScrimRegistrations()"><select id="scrimRegFilter" class="sqi-rank-input" onchange="filterAdminScrimRegistrations()"><option value="TODOS">TODOS</option><option value="PENDENTE">PENDENTES</option><option value="PAGA">PAGAS</option><option value="RECUSADA">RECUSADAS</option></select><button type="button" class="small-btn gold" onclick="renderAdminScrims()">ATUALIZAR</button></div><div id="adminScrimRegTable" style="margin-top:10px"></div>';window.__adminScrimRows=rows;filterAdminScrimRegistrations()}
+function filterAdminScrimRegistrations(){const el=document.getElementById('adminScrimRegTable');if(!el)return;const q=(document.getElementById('scrimRegSearch')?.value||'').toLowerCase().trim(),st=document.getElementById('scrimRegFilter')?.value||'TODOS';const rows=(window.__adminScrimRows||[]).filter(x=>(!q||[x.team,x.tag,x.captain,x.contact,x.discord,x.scrimTitle,x.players,x.paymentRef].join(' ').toLowerCase().includes(q))&&(st==='TODOS'||x.paymentStatus===st));el.innerHTML=rows.length?'<div class="admin-reg-table-wrap"><table class="admin-reg-table"><thead><tr><th>SCRIM</th><th>EQUIPE</th><th>CAPITÃO / CONTATO</th><th>JOGADORES / IDs</th><th>PIX</th><th>STATUS</th><th>AÇÕES</th></tr></thead><tbody>'+rows.map(x=>`<tr><td>${escPersonal(x.scrimTitle)}</td><td><b>${escPersonal(x.team)}</b><br><span class="score-note">${escPersonal(x.tag)}</span></td><td>${escPersonal(x.captain)}<br><span class="score-note">${escPersonal(x.contact)}</span></td><td style="white-space:pre-line">${escPersonal(x.players)}</td><td>${escPersonal(x.paymentRef)}</td><td><span class="admin-reg-status ${x.paymentStatus==='PAGA'?'approved':x.paymentStatus==='RECUSADA'?'rejected':'pending'}">${escPersonal(x.paymentStatus||'PENDENTE')}</span></td><td><div class="admin-actions">${x.paymentStatus==='PENDENTE'?`<button type="button" class="small-btn gold" onclick="approveScrimPayment(${JSON.stringify(String(x.id))})">CONFIRMAR PIX</button><button type="button" class="small-btn red" onclick="rejectScrimPayment(${JSON.stringify(String(x.id))})">RECUSAR</button>`:''}<button type="button" class="small-btn" onclick="viewScrimRegistration(${JSON.stringify(String(x.id))})">VER TUDO</button><button type="button" class="small-btn red" onclick="deleteScrimRegistration(${JSON.stringify(String(x.id))})">EXCLUIR</button></div></td></tr>`).join('')+'</tbody></table></div>':'<div class="admin-record-empty">Nenhum registro encontrado.</div>'}
+function approveScrimPayment(id){const rows=getScrimRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.paymentStatus='PAGA';x.status='APROVADA';x.approvedAt=new Date().toISOString();saveScrimRegistrations(rows);renderAdminScrims()}
+function rejectScrimPayment(id){const rows=getScrimRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.paymentStatus='RECUSADA';x.status='RECUSADA';x.rejectedAt=new Date().toISOString();saveScrimRegistrations(rows);renderAdminScrims()}
+function deleteScrimRegistration(id){if(!confirm('Excluir esta inscrição de scrim?'))return;saveScrimRegistrations(getScrimRegistrations().filter(v=>String(v.id)!==String(id)));renderAdminScrims()}
+function viewScrimRegistration(id){const x=getScrimRegistrations().find(v=>String(v.id)===String(id));if(!x)return;const modal=document.createElement('div');modal.className='sqi-personal-modal';const back=document.createElement('div');back.className='sqi-personal-modal-backdrop';const card=document.createElement('div');card.className='sqi-personal-modal-card';card.innerHTML=`<button type="button" class="sqi-personal-modal-close">×</button><div class="sqi-personal-kicker">SÉRIES QUALIFIED · SCRIM</div><h2>${escPersonal(x.team)}</h2><div class="sqi-personal-modal-meta">${escPersonal(x.scrimTitle)} · ${escPersonal(x.paymentStatus)}</div><div class="admin-detail-grid"><div class="admin-detail-box"><b>CAPITÃO</b><span>${escPersonal(x.captain)}</span></div><div class="admin-detail-box"><b>WHATSAPP</b><span>${escPersonal(x.contact)}</span></div><div class="admin-detail-box"><b>DISCORD</b><span>${escPersonal(x.discord)}</span></div><div class="admin-detail-box"><b>PLATAFORMA</b><span>${escPersonal(x.platform)}</span></div><div class="admin-detail-box"><b>CIDADE / ESTADO</b><span>${escPersonal(x.location)}</span></div><div class="admin-detail-box"><b>UID / ID</b><span>${escPersonal(x.gameId)}</span></div><div class="admin-detail-box" style="grid-column:1/-1"><b>JOGADORES E IDs</b><span>${escPersonal(x.players)}</span></div><div class="admin-detail-box"><b>VALOR</b><span>R$ ${escPersonal(Number(x.price||0).toFixed(2).replace('.',','))}</span></div><div class="admin-detail-box"><b>ID / E2E PIX</b><span>${escPersonal(x.paymentRef)}</span></div><div class="admin-detail-box" style="grid-column:1/-1"><b>OBSERVAÇÕES</b><span>${escPersonal(x.notes||'—')}</span></div></div><div class="admin-actions" style="margin-top:14px"><button type="button" class="small-btn" id="closeScrimRecord">FECHAR</button>${x.paymentStatus==='PENDENTE'?`<button type="button" class="small-btn gold" id="approveScrimRecord">CONFIRMAR PIX</button><button type="button" class="small-btn red" id="rejectScrimRecord">RECUSAR</button>`:''}</div>`;modal.append(back,card);document.body.appendChild(modal);const close=()=>modal.remove();back.onclick=close;card.querySelector('.sqi-personal-modal-close').onclick=close;card.querySelector('#closeScrimRecord').onclick=close;card.querySelector('#approveScrimRecord')?.addEventListener('click',()=>{approveScrimPayment(id);close()});card.querySelector('#rejectScrimRecord')?.addEventListener('click',()=>{rejectScrimPayment(id);close()})}
+function createScrim(){const g=id=>document.getElementById(id)?.value.trim()||'';const title=g('scrimTitleAdmin'),format=g('scrimFormatAdmin'),drops=Number(g('scrimDropsAdmin')||1),price=Number(g('scrimPriceAdmin')||0),date=g('scrimDateAdmin'),time=g('scrimTimeAdmin'),maxTeams=Number(g('scrimMaxTeamsAdmin')||0),status=g('scrimStatusAdmin'),pixCode=g('scrimPixAdmin'),pixName=g('scrimPixNameAdmin'),rules=g('scrimRulesAdmin'),msg=document.getElementById('scrimCreateMsg');if(!title||!date||!time||!pixCode){msg.textContent='Preencha nome, data, hora e código Pix.';return}const rows=getScrims();rows.push({id:Date.now(),title,format,drops,price,date,time,maxTeams,status,pixCode,pixName,rules,active:true,createdAt:new Date().toISOString()});saveScrims(rows);msg.textContent='✓ Scrim publicada na Home e pronta para inscrições.';renderAdminScrims()}
+function toggleScrim(id){const rows=getScrims(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.active=x.active===false;saveScrims(rows);renderAdminScrims()}
+function deleteScrim(id){if(!confirm('Excluir esta scrim e removê-la da Home?'))return;saveScrims(getScrims().filter(v=>String(v.id)!==String(id)));renderAdminScrims()}
+
 function showAdminTab(tab,btn){
  document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
- ['dashboard','requests','teams','results','personalizadas','scoring','recruitment','sqiRanking','intelligence','trainers'].forEach(x=>{const el=document.getElementById('admin'+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.style.display=x===tab?'block':'none'});
+ ['dashboard','requests','teams','results','personalizadas','scrims','records','scoring','recruitment','sqiRanking','intelligence','trainers'].forEach(x=>{const el=document.getElementById('admin'+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.style.display=x===tab?'block':'none'});
  renderAdminAll();
 }
 const SQI_TRAINER_STATE_KEY='sqi_trainer_session';
@@ -1668,15 +1759,40 @@ async function enableTrainerNotifications(){try{if(!('Notification' in window))t
 async function renderTrainerAdmin(){const el=document.getElementById('adminTrainers');if(!el)return;let trainers=[];try{const r=await fetch(SQI_DB_URL+'/rest/v1/sqi_trainers?select=id,name,nick,email,username,role,active,created_at&order=created_at.desc',{headers:sqiHeaders()});trainers=await r.json();if(!Array.isArray(trainers))trainers=[]}catch(e){}el.innerHTML='<div class="admin-card"><h3>👥 TREINADORES / RECRUTADORES</h3><p class="score-note">Crie acessos individuais e atribua testes sem compartilhar a senha do ADM.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="newTrainerName" class="sqi-rank-input" placeholder="Nome"><input id="newTrainerUser" class="sqi-rank-input" placeholder="Usuário"><input id="newTrainerPass" class="sqi-rank-input" type="password" placeholder="Senha"><select id="newTrainerRole" class="sqi-rank-input"><option value="trainer">Treinador</option><option value="recruiter">Recrutador</option></select></div><button class="small-btn gold" style="margin-top:8px" onclick="createTrainerAccount()">CRIAR ACESSO</button><span id="trainerCreateMsg" class="score-note"></span></div><div class="admin-card"><h3>NOVO TESTE</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="testCandidate" class="sqi-rank-input" placeholder="Nome do candidato"><input id="testContact" class="sqi-rank-input" placeholder="WhatsApp/contato"><select id="testTrainer" class="sqi-rank-input"><option value="">Selecione treinador</option>'+trainers.filter(t=>t.active).map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+esc(t.username||'')+'</option>').join('')+'</select><input id="testSchedule" class="sqi-rank-input" type="datetime-local"></div><textarea id="testNotes" class="sqi-rank-input" placeholder="Observações" style="margin-top:8px;width:100%;min-height:70px"></textarea><button class="small-btn gold" style="margin-top:8px" onclick="assignTrainingTest()">ENVIAR TESTE AO TREINADOR</button><span id="testAssignMsg" class="score-note"></span></div>'}
 async function createTrainerAccount(){const name=document.getElementById('newTrainerName').value.trim(),user=document.getElementById('newTrainerUser').value.trim(),pass=document.getElementById('newTrainerPass').value,role=document.getElementById('newTrainerRole').value;if(!name||!user||!pass){document.getElementById('trainerCreateMsg').textContent='Preencha nome, usuário e senha.';return}try{await trainerRpc('sqi_create_trainer',{p_name:name,p_username:user,p_password:pass,p_role:role});document.getElementById('trainerCreateMsg').textContent='✓ Acesso criado.';renderTrainerAdmin()}catch(e){document.getElementById('trainerCreateMsg').textContent='Erro: '+e.message}}
 async function assignTrainingTest(){const candidate=document.getElementById('testCandidate').value.trim(),contact=document.getElementById('testContact').value.trim(),trainer=document.getElementById('testTrainer').value,sched=document.getElementById('testSchedule').value,notes=document.getElementById('testNotes').value.trim();if(!candidate||!trainer){document.getElementById('testAssignMsg').textContent='Informe candidato e treinador.';return}try{await trainerRpc('sqi_assign_training_test',{p_candidate_name:candidate,p_candidate_contact:contact,p_trainer_id:trainer,p_game:'Warzone',p_notes:notes||null,p_scheduled_at:sched?new Date(sched).toISOString():null});document.getElementById('testAssignMsg').textContent='✓ Teste enviado e notificação criada.';['testCandidate','testContact','testSchedule','testNotes'].forEach(id=>document.getElementById(id).value='');}catch(e){document.getElementById('testAssignMsg').textContent='Erro: '+e.message}}
+function renderAdminRecords(){
+  const el=document.getElementById('adminRecords');if(!el)return;
+  const personals=getPersonalizadas();
+  const regs=getPersonalRegistrations();
+  const pending=regs.filter(x=>x.status==='PENDENTE').length;
+  const approved=regs.filter(x=>x.status==='APROVADA').length;
+  const rejected=regs.filter(x=>x.status==='RECUSADA').length;
+  el.innerHTML=`<div class="admin-card"><h3>🗃️ BANCO DE REGISTROS</h3><p class="score-note">Central de histórico das inscrições das personalizadas. Tudo que entrar, for aprovado, recusado ou excluído é administrado aqui.</p><div class="stat-admin"><div><strong>${regs.length}</strong><span>INSCRIÇÕES</span></div><div><strong>${pending}</strong><span>PENDENTES</span></div><div><strong>${approved}</strong><span>APROVADAS</span></div><div><strong>${rejected}</strong><span>RECUSADAS</span></div><div><strong>${personals.length}</strong><span>PERSONALIZADAS</span></div></div></div><div class="admin-card"><h3>📋 LISTAGEM COMPLETA</h3><div id="adminRecordsList"></div></div>`;
+  renderAdminRecordsList(regs);
+}
+function renderAdminRecordsList(rows){
+  const el=document.getElementById('adminRecordsList');if(!el)return;
+  rows=(rows||[]).slice().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  if(!rows.length){el.innerHTML='<div class="admin-record-empty">O banco ainda não possui registros.</div>';return}
+  el.innerHTML=`<div class="admin-reg-toolbar"><input id="recordSearch" class="sqi-rank-input" placeholder="Pesquisar no banco..." oninput="filterAdminRecords()"><select id="recordStatus" class="sqi-rank-input" onchange="filterAdminRecords()"><option value="TODOS">TODOS OS STATUS</option><option value="PENDENTE">PENDENTES</option><option value="APROVADA">APROVADAS</option><option value="RECUSADA">RECUSADAS</option></select><button type="button" class="small-btn gold" onclick="refreshAdminRecords()">ATUALIZAR BANCO</button></div><div id="adminRecordsTable"></div>`;
+  window.__adminAllRecords=rows;filterAdminRecords();
+}
+function filterAdminRecords(){
+  const el=document.getElementById('adminRecordsTable');if(!el)return;const rows=window.__adminAllRecords||[];const q=(document.getElementById('recordSearch')?.value||'').toLowerCase().trim();const st=document.getElementById('recordStatus')?.value||'TODOS';
+  const f=rows.filter(x=>{const hay=[x.team,x.tag,x.captain,x.contact,x.players,x.personalTitle].join(' ').toLowerCase();return(!q||hay.includes(q))&&(st==='TODOS'||x.status===st)});
+  if(!f.length){el.innerHTML='<div class="admin-record-empty">Nenhum registro encontrado.</div>';return}
+  el.innerHTML='<div class="admin-reg-table-wrap"><table class="admin-reg-table"><thead><tr><th>REGISTRO</th><th>PERSONALIZADA</th><th>EQUIPE</th><th>CAPITÃO</th><th>CONTATO</th><th>STATUS</th><th>AÇÃO</th></tr></thead><tbody>'+f.map(x=>{const cls=x.status==='APROVADA'?'approved':x.status==='RECUSADA'?'rejected':'pending';return `<tr class="admin-reg-row"><td>${escPersonal(formatPersonalDateTime(x.createdAt))}</td><td>${escPersonal(x.personalTitle||'—')}</td><td><b>${escPersonal(x.team||'—')}</b>${x.tag?`<br><span class="score-note">${escPersonal(x.tag)}</span>`:''}</td><td>${escPersonal(x.captain||'—')}</td><td>${escPersonal(x.contact||'—')}</td><td><span class="admin-reg-status ${cls}">${escPersonal(x.status||'PENDENTE')}</span></td><td><button type="button" class="small-btn" onclick="viewPersonalRegistration(${JSON.stringify(String(x.id))})">ABRIR REGISTRO</button></td></tr>`}).join('')+'</tbody></table></div>';
+}
+async function refreshAdminRecords(){await loadPersonalRegistrationsCloud();renderAdminRecords()}
+
 function renderAdminAll(){
- renderPersonalizadasHome();renderAdminPersonalizadas();
+ renderPersonalizadasHome();renderScrimsHome();renderAdminPersonalizadas();renderAdminScrims();renderAdminRecords();renderAdminPersonalRegistrations().catch(e=>console.warn('SQI registros',e));
  const req=getRequests(),teams=getTeams(),results=getResults();
  renderScoringPanel();
  renderRecruitmentAdmin();
  renderSqiRanking();
  renderIntelligence();
  renderTrainerAdmin();
- document.getElementById('adminDashboard').innerHTML='<div class="admin-card"><h3>VISÃO GERAL</h3><div class="stat-admin"><div><strong>'+req.filter(x=>x.status==='PENDENTE').length+'</strong><span>CADASTROS PENDENTES</span></div><div><strong>'+teams.length+'</strong><span>EQUIPES APROVADAS</span></div><div><strong>'+results.length+'</strong><span>RESULTADOS</span></div><div><strong>'+getRecruitments().filter(x=>x.status==='PENDENTE').length+'</strong><span>RECRUTAMENTOS PENDENTES</span></div></div></div><div class="admin-card"><h3>MOTOR DE PONTUAÇÃO</h3><p class="score-note">Pontuação configurável por colocação, kills, dano e views. Abra a aba <b>PONTUAÇÃO</b> para editar a fórmula e lançar resultados.</p></div>';
+ document.getElementById('adminDashboard').innerHTML='<div class="admin-card"><h3>VISÃO GERAL</h3><div class="stat-admin"><div><strong>'+req.filter(x=>x.status==='PENDENTE').length+'</strong><span>CADASTROS PENDENTES</span></div><div><strong>'+teams.length+'</strong><span>EQUIPES APROVADAS</span></div><div><strong>'+results.length+'</strong><span>RESULTADOS</span></div><div><strong>'+getRecruitments().filter(x=>x.status==='PENDENTE').length+'</strong><span>RECRUTAMENTOS PENDENTES</span></div><div><strong>'+getPersonalizadas().length+'</strong><span>PERSONALIZADAS</span></div><div><strong>'+getPersonalRegistrations().filter(x=>x.status==='PENDENTE').length+'</strong><span>INSCRIÇÕES PERSONALIZADAS PENDENTES</span></div><div><strong>'+getScrimRegistrations().filter(x=>x.status==='PENDENTE').length+'</strong><span>SCRIMS PENDENTES</span></div></div></div><div class="admin-card"><h3>MOTOR DE PONTUAÇÃO</h3><p class="score-note">Pontuação configurável por colocação, kills, dano e views. Abra a aba <b>PONTUAÇÃO</b> para editar a fórmula e lançar resultados.</p></div>';
  document.getElementById('adminRequests').innerHTML='<div class="admin-card"><h3>INSCRIÇÕES RECEBIDAS</h3><div style="overflow:auto"><table class="admin-table"><thead><tr><th>LOGO</th><th>EQUIPE</th><th>CAPITÃO</th><th>WHATSAPP</th><th>JOGADORES</th><th>STATUS</th><th>AÇÕES</th></tr></thead><tbody>'+req.map((r,i)=>'<tr><td><img class="admin-logo" src="'+r.logo+'"></td><td><b>'+esc(r.name)+'</b><br><span class="pill">'+esc(r.tag)+'</span></td><td>'+esc(r.captain)+'</td><td>'+esc(r.captainPhone)+'</td><td>'+r.players.map(esc).join('<br>')+'</td><td>'+esc(r.status)+'</td><td><div class="admin-actions">'+(r.status==='PENDENTE'?'<button class="small-btn gold" onclick="approveTeam('+r.id+')">APROVAR</button><button class="small-btn red" onclick="rejectTeam('+r.id+')">RECUSAR</button>':'')+'<button class="small-btn" onclick="removeRequest('+r.id+')">EXCLUIR</button></div></td></tr>').join('')+'</tbody></table></div></div>';
  document.getElementById('adminTeams').innerHTML='<div class="admin-card"><h3>EQUIPES OFICIAIS</h3><div style="overflow:auto"><table class="admin-table"><thead><tr><th>LOGO</th><th>EQUIPE</th><th>CAPITÃO</th><th>WHATSAPP</th><th>JOGADORES</th><th>AÇÃO</th></tr></thead><tbody>'+teams.map(t=>'<tr><td><img class="admin-logo" src="'+t.logo+'"></td><td><b>'+esc(t.name)+'</b><br><span class="pill">'+esc(t.tag)+'</span></td><td>'+esc(t.captain)+'</td><td>'+esc(t.captainPhone)+'</td><td>'+t.players.map(esc).join('<br>')+'</td><td><button class="small-btn red" onclick="removeTeam('+t.id+')">EXCLUIR</button></td></tr>').join('')+'</tbody></table></div></div>';
  document.getElementById('adminResults').innerHTML='<div class="admin-card"><h3>RESULTADOS LANÇADOS</h3><p style="font-size:11px;color:#777">Os resultados do Tournament Manager podem ser armazenados no mesmo navegador e associados às equipes aprovadas.</p><table class="admin-table"><thead><tr><th>PARTIDA</th><th>EQUIPE</th><th>PONTOS</th></tr></thead><tbody>'+results.map(r=>'<tr><td>P'+esc(r.match)+'</td><td>'+esc(r.team)+'</td><td><b>'+Number(r.total||0).toFixed(2)+'</b></td></tr>').join('')+'</tbody></table></div>';
@@ -2674,7 +2790,7 @@ function renderAcademyProgress(){let done=0;SQI_LESSONS.forEach((_,i)=>{if(local
   const SHARED=new Set([
     'sqi_team_requests','sqi_approved_teams','sqi_match_results',
     'sqi_internal_teams','sqi_internal_rules','sqi_internal_results',
-    'sqi_score_rules','sqi_site_stats','sqi_general_ranking','sqi_intelligence','sqi_personalizadas','sqi_personal_registrations'
+    'sqi_score_rules','sqi_site_stats','sqi_general_ranking','sqi_intelligence','sqi_personalizadas','sqi_personal_registrations','sqi_scrims','sqi_scrim_registrations'
   ]);
   const native={get:Storage.prototype.getItem,set:Storage.prototype.setItem,remove:Storage.prototype.removeItem};
   const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
@@ -2980,6 +3096,9 @@ document.addEventListener('click',function(ev){
   const old=window.renderSqiAnalytics;
   window.renderSqiAnalytics=function(a){if(old)old(a);render(a)};
 })();
+</script>
+<script id="sqi-scrim-boot">
+(function(){function boot(){try{renderScrimsHome();}catch(e){console.warn('SQI scrims home',e)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
 </script>
 </body>
 </html>
