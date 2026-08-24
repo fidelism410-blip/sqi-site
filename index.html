@@ -2598,7 +2598,7 @@ function renderAcademyProgress(){let done=0;SQI_LESSONS.forEach((_,i)=>{if(local
   const SHARED=new Set([
     'sqi_team_requests','sqi_approved_teams','sqi_match_results',
     'sqi_internal_teams','sqi_internal_rules','sqi_internal_results',
-    'sqi_score_rules','sqi_site_stats','sqi_general_ranking','sqi_intelligence','sqi_personalizadas'
+    'sqi_score_rules','sqi_site_stats','sqi_general_ranking','sqi_intelligence','sqi_personalizadas','sqi_personal_registrations'
   ]);
   const native={get:Storage.prototype.getItem,set:Storage.prototype.setItem,remove:Storage.prototype.removeItem};
   const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
@@ -2946,5 +2946,27 @@ document.addEventListener('click',function(ev){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(refresh,1200));
   else setTimeout(refresh,1200);
   setInterval(refresh,10000);
+})();
+</script>
+
+<script id="sqi-personal-registration-sync">
+(function(){
+  async function refreshRegistrations(){
+    try{
+      if(typeof window.sqiCloudGet!=='function') return;
+      let v=await window.sqiCloudGet('sqi_personal_registrations');
+      if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){}}
+      if(Array.isArray(v)){
+        localStorage.setItem('sqi_personal_registrations',JSON.stringify(v));
+        if(typeof window.renderAdminPersonalRegistrations==='function'){
+          window.renderAdminPersonalRegistrations();
+        }
+      }
+    }catch(e){console.warn('SQI inscrições sync:',e)}
+  }
+  if(document.readyState==='loading')
+    document.addEventListener('DOMContentLoaded',()=>setTimeout(refreshRegistrations,1200));
+  else setTimeout(refreshRegistrations,1200);
+  setInterval(refreshRegistrations,10000);
 })();
 </script>
