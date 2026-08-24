@@ -1456,13 +1456,30 @@ function renderPersonalizadasHome(){
 }
 function renderAdminPersonalizadas(){
  const el=document.getElementById('adminPersonalizadas');if(!el)return;const rows=getPersonalizadas().sort((a,b)=>new Date((a.date||'9999-12-31')+'T'+(a.time||'23:59'))-new Date((b.date||'9999-12-31')+'T'+(b.time||'23:59')));
- el.innerHTML=`<div class="admin-card"><h3>🎮 CRIAR PERSONALIZADA</h3><p class="score-note">Crie a personalizada aqui. Depois de salvar, ela aparece automaticamente na Home do site.</p><div class="personal-form-grid"><div><label>NOME DA PERSONALIZADA</label><input id="personalTitle" placeholder="Ex.: PERSONALIZADA SQI · SEXTA"></div><div><label>FORMATO</label><select id="personalFormat"><option value="TRIO">TRIO</option><option value="QUARTETO">QUARTETO</option></select></div><div><label>QUANTAS QUEDAS</label><input id="personalDrops" type="number" min="1" step="1" placeholder="Ex.: 4"></div><div><label>DATA</label><input id="personalDate" type="date"></div><div><label>HORA</label><input id="personalTime" type="time"></div><div><label>STATUS</label><select id="personalStatus"><option value="PROGRAMADA">PROGRAMADA</option><option value="INSCRIÇÕES ABERTAS">INSCRIÇÕES ABERTAS</option><option value="EM BREVE">EM BREVE</option></select></div><div class="full"><label>REGRAS</label><textarea id="personalRules" placeholder="Ex.: Respeitar host, sem exploits, pontuação por colocação e kills..."></textarea></div><div class="full"><label>OBSERVAÇÕES / INFORMAÇÕES EXTRAS</label><textarea id="personalNotes" placeholder="Ex.: Sala abre 15 minutos antes. Código será enviado no grupo."></textarea></div></div><div class="admin-actions" style="margin-top:10px"><button class="small-btn gold" onclick="createPersonalizada()">CRIAR PERSONALIZADA</button></div><div id="personalCreateMsg" class="score-note" style="margin-top:8px"></div></div><div class="admin-card"><h3>📅 PERSONALIZADAS PROGRAMADAS</h3><div id="adminPersonalList"></div></div><div class="admin-card" style="margin-top:12px"><h3>📝 INSCRIÇÕES NAS PERSONALIZADAS</h3><div id="adminPersonalRegistrations"></div></div>`;
+ el.innerHTML=`<div class="admin-card"><h3>🎮 CRIAR PERSONALIZADA</h3><p class="score-note">Crie a personalizada aqui. Depois de salvar, ela aparece automaticamente na Home do site.</p><div class="personal-form-grid"><div><label>NOME DA PERSONALIZADA</label><input id="personalTitle" placeholder="Ex.: PERSONALIZADA SQI · SEXTA"></div><div><label>FORMATO</label><select id="personalFormat"><option value="TRIO">TRIO</option><option value="QUARTETO">QUARTETO</option></select></div><div><label>QUANTAS QUEDAS</label><input id="personalDrops" type="number" min="1" step="1" placeholder="Ex.: 4"></div><div><label>DATA</label><input id="personalDate" type="date"></div><div><label>HORA</label><input id="personalTime" type="time"></div><div><label>STATUS</label><select id="personalStatus"><option value="PROGRAMADA">PROGRAMADA</option><option value="INSCRIÇÕES ABERTAS">INSCRIÇÕES ABERTAS</option><option value="EM BREVE">EM BREVE</option></select></div><div class="full"><label>REGRAS</label><textarea id="personalRules" placeholder="Ex.: Respeitar host, sem exploits, pontuação por colocação e kills..."></textarea></div><div class="full"><label>OBSERVAÇÕES / INFORMAÇÕES EXTRAS</label><textarea id="personalNotes" placeholder="Ex.: Sala abre 15 minutos antes. Código será enviado no grupo."></textarea></div></div><div class="admin-actions" style="margin-top:10px"><button class="small-btn gold" onclick="createPersonalizada()">CRIAR PERSONALIZADA</button></div><div id="personalCreateMsg" class="score-note" style="margin-top:8px"></div></div><div class="admin-card"><h3>📅 PERSONALIZADAS PROGRAMADAS</h3><div id="adminPersonalList"></div></div><div class="admin-card" style="margin-top:12px"><h3>📝 INSCRIÇÕES NAS PERSONALIZADAS</h3><p class="score-note">Receba aviso neste celular quando uma nova inscrição entrar. Cada ADM deve ativar no próprio aparelho.</p><div class="admin-actions" style="margin:8px 0"><button class="small-btn gold" type="button" onclick="enablePersonalAdminNotifications()">🔔 ATIVAR NOTIFICAÇÕES</button><span id="personalAdminNotifyMsg" class="score-note"></span></div><div id="adminPersonalRegistrations"></div></div>`;
  renderAdminPersonalList();
 }
 function renderAdminPersonalList(){const el=document.getElementById('adminPersonalList');if(!el)return;const rows=getPersonalizadas();if(!rows.length){el.innerHTML='<div class="score-note">Nenhuma personalizada cadastrada.</div>';return}el.innerHTML=rows.map(x=>`<div class="admin-card" style="margin-top:9px"><b>${escPersonal(x.title)}</b><div class="score-note">${escPersonal(formatPersonalDate(x.date))} · ${escPersonal(x.time||'—')} · ${escPersonal(x.format)} · ${escPersonal(x.drops)} quedas · ${escPersonal(x.statusLabel||'PROGRAMADA')}</div>${x.rules?`<div class="score-note" style="margin-top:5px;white-space:pre-line">${escPersonal(x.rules)}</div>`:''}<div class="admin-actions" style="margin-top:8px"><button class="small-btn" onclick="togglePersonalizada(${JSON.stringify(String(x.id))})">${x.active===false?'ATIVAR':'OCULTAR DA HOME'}</button><button class="small-btn red" onclick="deletePersonalizada(${JSON.stringify(String(x.id))})">EXCLUIR</button></div></div>`).join('')}
 
 const SQI_PERSONAL_REG_KEY='sqi_personal_registrations';
 function getPersonalRegistrations(){try{return JSON.parse(localStorage.getItem(SQI_PERSONAL_REG_KEY)||'[]')}catch(e){return[]}}
+async function loadPersonalRegistrationsCloud(){
+  try{
+    if(typeof window.sqiCloudGet==='function'){
+      let v=await window.sqiCloudGet(SQI_PERSONAL_REG_KEY);
+      if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){}}
+      if(Array.isArray(v)){localStorage.setItem(SQI_PERSONAL_REG_KEY,JSON.stringify(v));return v;}
+    }
+  }catch(e){console.warn('SQI inscrições sync',e)}
+  return getPersonalRegistrations();
+}
+async function savePersonalRegistrationsCloud(rows){
+  localStorage.setItem(SQI_PERSONAL_REG_KEY,JSON.stringify(rows));
+  if(typeof window.sqiCloudSet==='function'){
+    const ok=await window.sqiCloudSet(SQI_PERSONAL_REG_KEY,JSON.stringify(rows));
+    if(ok===false)throw new Error('O banco não confirmou a inscrição.');
+  }
+}
 function savePersonalRegistrations(rows){localStorage.setItem(SQI_PERSONAL_REG_KEY,JSON.stringify(rows))}
 window.openPersonalRegistration=function(id){
   const event=getPersonalizadas().find(x=>String(x.id)===String(id));
@@ -1544,22 +1561,81 @@ window.openPersonalRegistration=function(id){
 }
 
 window.closePersonalRegistration=function(){document.getElementById('sqiPersonalRegisterModal')?.remove();document.body.style.overflow='';}
-window.submitPersonalRegistration=function(id){
+window.submitPersonalRegistration=async function(id){
   const event=getPersonalizadas().find(x=>String(x.id)===String(id)),msg=document.getElementById('personalRegMsg'); if(!event||!msg)return;
   const team=(document.getElementById('personalRegTeam')?.value||'').trim(),tag=(document.getElementById('personalRegTag')?.value||'').trim(),captain=(document.getElementById('personalRegCaptain')?.value||'').trim(),contact=(document.getElementById('personalRegContact')?.value||'').trim(),players=(document.getElementById('personalRegPlayers')?.value||'').trim();
   if(!team||!captain||!contact){msg.textContent='Preencha equipe, capitão e contato.';return}
-  const rows=getPersonalRegistrations(); rows.push({id:Date.now(),personalId:String(event.id),personalTitle:event.title,team,tag,captain,contact,players,status:'PENDENTE',createdAt:new Date().toISOString()}); savePersonalRegistrations(rows);
+  const rows=await loadPersonalRegistrationsCloud(); rows.push({id:Date.now(),personalId:String(event.id),personalTitle:event.title,team,tag,captain,contact,players,status:'PENDENTE',createdAt:new Date().toISOString()}); try{await savePersonalRegistrationsCloud(rows)}catch(e){msg.textContent='Não foi possível enviar: '+e.message;return}
   document.querySelector('#sqiPersonalRegisterModal .sqi-personal-modal-card').innerHTML=`<div class="sqi-personal-kicker">SÉRIES QUALIFIED · INSCRIÇÃO</div><div class="sqi-personal-success">✓</div><h2>INSCRIÇÃO ENVIADA COM SUCESSO</h2><p>Seu cadastro foi enviado para a administração da SQI. Agora é só aguardar a confirmação.</p><button type="button" class="small-btn gold" onclick="closePersonalRegistration()">FECHAR</button>`;
   try{renderAdminPersonalRegistrations()}catch(e){}
 }
-function renderAdminPersonalRegistrations(){
+async function renderAdminPersonalRegistrations(){
+  await loadPersonalRegistrationsCloud();
   const el=document.getElementById('adminPersonalRegistrations'); if(!el)return;
   const rows=getPersonalRegistrations().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
   if(!rows.length){el.innerHTML='<div class="score-note">Nenhuma inscrição recebida.</div>';return}
-  el.innerHTML=rows.map(x=>`<div class="admin-card" style="margin-top:9px"><b>${escPersonal(x.team)}</b> ${x.tag?`<span class="score-note">[${escPersonal(x.tag)}]</span>`:''}<div class="score-note">${escPersonal(x.personalTitle)} · Capitão: ${escPersonal(x.captain)} · ${escPersonal(x.contact)}</div>${x.players?`<div class="score-note" style="white-space:pre-wrap">${escPersonal(x.players)}</div>`:''}<div class="admin-actions" style="margin-top:8px"><span class="score-note">STATUS: ${escPersonal(x.status)}</span>${x.status==='PENDENTE'?`<button class="small-btn gold" onclick="approvePersonalRegistration(${JSON.stringify(String(x.id))})">APROVAR</button><button class="small-btn red" onclick="rejectPersonalRegistration(${JSON.stringify(String(x.id))})">RECUSAR</button>`:''}</div></div>`).join('');
+  el.innerHTML=rows.map(x=>`<div class="admin-card" style="margin-top:9px"><b>${escPersonal(x.team)}</b> ${x.tag?`<span class="score-note">[${escPersonal(x.tag)}]</span>`:''}<div class="score-note">${escPersonal(x.personalTitle)} · Capitão: ${escPersonal(x.captain)} · ${escPersonal(x.contact)}</div>${x.players?`<div class="score-note" style="white-space:pre-wrap">${escPersonal(x.players)}</div>`:''}<div class="admin-actions" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="score-note">STATUS: ${escPersonal(x.status)}</span>${x.status==='PENDENTE'?`<button class="small-btn gold" onclick="approvePersonalRegistration('${String(x.id).replace(/'/g, "\\'")}')">APROVAR</button><button class="small-btn red" onclick="rejectPersonalRegistration('${String(x.id).replace(/'/g, "\\'")}')">RECUSAR</button>`:''}<button class="small-btn" onclick="deletePersonalRegistration('${String(x.id).replace(/'/g, "\\'")}')">EXCLUIR</button></div></div>`).join('');
 }
-function approvePersonalRegistration(id){const rows=getPersonalRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.status='APROVADA';x.approvedAt=new Date().toISOString();savePersonalRegistrations(rows);renderAdminPersonalRegistrations()}
-function rejectPersonalRegistration(id){const rows=getPersonalRegistrations(),x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.status='RECUSADA';x.rejectedAt=new Date().toISOString();savePersonalRegistrations(rows);renderAdminPersonalRegistrations()}
+async function updatePersonalRegistrationStatus(id,status){
+  const rows=await loadPersonalRegistrationsCloud();
+  const x=rows.find(v=>String(v.id)===String(id));
+  if(!x){alert('Inscrição não encontrada no banco central.');return;}
+  x.status=status;
+  if(status==='APROVADA')x.approvedAt=new Date().toISOString();
+  if(status==='RECUSADA')x.rejectedAt=new Date().toISOString();
+  try{await savePersonalRegistrationsCloud(rows);await renderAdminPersonalRegistrations();showPersonalAdminToast(status==='APROVADA'?'INSCRIÇÃO APROVADA COM SUCESSO':'INSCRIÇÃO RECUSADA COM SUCESSO');}
+  catch(e){alert('Não foi possível salvar no banco central: '+e.message);}
+}
+function approvePersonalRegistration(id){return updatePersonalRegistrationStatus(id,'APROVADA')}
+function rejectPersonalRegistration(id){return updatePersonalRegistrationStatus(id,'RECUSADA')}
+async function deletePersonalRegistration(id){
+  if(!confirm('Excluir esta inscrição permanentemente?'))return;
+  const rows=await loadPersonalRegistrationsCloud();
+  const next=rows.filter(v=>String(v.id)!==String(id));
+  if(next.length===rows.length){alert('Inscrição não encontrada.');return;}
+  try{await savePersonalRegistrationsCloud(next);await renderAdminPersonalRegistrations();showPersonalAdminToast('INSCRIÇÃO EXCLUÍDA COM SUCESSO');}
+  catch(e){alert('Não foi possível excluir no banco central: '+e.message);}
+}
+function showPersonalAdminToast(text){
+  let t=document.getElementById('sqiPersonalAdminToast');
+  if(!t){t=document.createElement('div');t.id='sqiPersonalAdminToast';t.style.cssText='position:fixed;right:18px;bottom:22px;z-index:99999;background:#c89b22;color:#050505;padding:13px 17px;border-radius:10px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.4);';document.body.appendChild(t);}
+  t.textContent='✓ '+text;t.style.display='block';clearTimeout(t._timer);t._timer=setTimeout(()=>t.style.display='none',3000);
+}
+let sqiPersonalNotifyTimer=null;
+let sqiPersonalNotifyKnown=new Set();
+async function enablePersonalAdminNotifications(){
+  const msg=document.getElementById('personalAdminNotifyMsg');
+  try{
+    if(!('Notification' in window))throw new Error('Este navegador não suporta notificações.');
+    const p=await Notification.requestPermission();
+    if(msg)msg.textContent=p==='granted'?'✓ Notificações ativadas neste celular.':'Permissão não concedida.';
+    if(p==='granted'){
+      const rows=await loadPersonalRegistrationsCloud();
+      rows.forEach(x=>sqiPersonalNotifyKnown.add(String(x.id)));
+      checkPersonalAdminNotifications(true);
+    }
+  }catch(e){if(msg)msg.textContent=e.message;}
+}
+async function checkPersonalAdminNotifications(initial=false){
+  try{
+    const rows=await loadPersonalRegistrationsCloud();
+    const current=new Set(rows.map(x=>String(x.id)));
+    if(!initial && 'Notification' in window && Notification.permission==='granted'){
+      rows.filter(x=>!sqiPersonalNotifyKnown.has(String(x.id))).forEach(x=>{
+        new Notification('Nova inscrição — SQI',{body:(x.team||'Equipe')+' se inscreveu em '+(x.personalTitle||'Personalizada SQI')});
+        showPersonalAdminToast('NOVA INSCRIÇÃO: '+(x.team||'EQUIPE'));
+      });
+    }
+    sqiPersonalNotifyKnown=current;
+    if(document.getElementById('adminPersonalRegistrations'))await renderAdminPersonalRegistrations();
+  }catch(e){console.warn('SQI personal notifications',e)}
+}
+function startPersonalAdminNotifications(){
+  if(sqiPersonalNotifyTimer)clearInterval(sqiPersonalNotifyTimer);
+  setTimeout(()=>checkPersonalAdminNotifications(true),1500);
+  sqiPersonalNotifyTimer=setInterval(()=>checkPersonalAdminNotifications(false),7000);
+}
+startPersonalAdminNotifications();
 function createPersonalizada(){const title=(document.getElementById('personalTitle')?.value||'').trim(),format=document.getElementById('personalFormat')?.value||'TRIO',drops=Number(document.getElementById('personalDrops')?.value||0),date=document.getElementById('personalDate')?.value||'',time=document.getElementById('personalTime')?.value||'',statusLabel=document.getElementById('personalStatus')?.value||'PROGRAMADA',rules=(document.getElementById('personalRules')?.value||'').trim(),notes=(document.getElementById('personalNotes')?.value||'').trim(),msg=document.getElementById('personalCreateMsg');if(!title||!date||!time||drops<1){msg.textContent='Preencha nome, data, horário e quantidade de quedas.';return}const rows=getPersonalizadas();rows.push({id:Date.now(),title,format,drops,date,time,statusLabel,rules,notes,active:true,createdAt:new Date().toISOString()});savePersonalizadas(rows);msg.textContent='✓ Personalizada criada e publicada na Home.';renderAdminPersonalizadas()}
 function togglePersonalizada(id){const rows=getPersonalizadas();const x=rows.find(v=>String(v.id)===String(id));if(!x)return;x.active=x.active===false;savePersonalizadas(rows);renderAdminPersonalizadas()}
 function deletePersonalizada(id){if(!confirm('Excluir esta personalizada?'))return;savePersonalizadas(getPersonalizadas().filter(v=>String(v.id)!==String(id)));renderAdminPersonalizadas()}
@@ -2948,25 +3024,15 @@ document.addEventListener('click',function(ev){
   setInterval(refresh,10000);
 })();
 </script>
-
-<script id="sqi-personal-registration-sync">
+<script id="sqi-registration-sync-final">
 (function(){
-  async function refreshRegistrations(){
-    try{
-      if(typeof window.sqiCloudGet!=='function') return;
-      let v=await window.sqiCloudGet('sqi_personal_registrations');
-      if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){}}
-      if(Array.isArray(v)){
-        localStorage.setItem('sqi_personal_registrations',JSON.stringify(v));
-        if(typeof window.renderAdminPersonalRegistrations==='function'){
-          window.renderAdminPersonalRegistrations();
-        }
-      }
-    }catch(e){console.warn('SQI inscrições sync:',e)}
-  }
-  if(document.readyState==='loading')
-    document.addEventListener('DOMContentLoaded',()=>setTimeout(refreshRegistrations,1200));
-  else setTimeout(refreshRegistrations,1200);
-  setInterval(refreshRegistrations,10000);
+ async function sync(){
+  try{
+   await loadPersonalRegistrationsCloud();
+   if(typeof renderAdminPersonalRegistrations==='function') await renderAdminPersonalRegistrations();
+  }catch(e){console.warn('SQI inscrições:',e)}
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(sync,1200));else setTimeout(sync,1200);
+ setInterval(sync,10000);
 })();
 </script>
